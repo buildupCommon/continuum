@@ -171,12 +171,12 @@ Continuum AI는 연결된 맥락을 기반으로 다음 역할을 수행합니�
 
 Continuum의 주요 사용자 흐름과 정보 구조를 검증하기 위한 정적 HTML 파일입니다. 각 Pilot은 샘플 데이터를 포함한 독립 실행형 화면이며 별도의 서버나 빌드 과정 없이 브라우저에서 열 수 있습니다.
 
-| Pilot | 대상 사용자 | 주요 화면 | 파일 |
+| Pilot | 대상 사용자 | 주요 화면 | 체험하기 |
 | --- | --- | --- | --- |
-| **Continuum Client** | 고객 현장 운영 담당자 | Environment, Solutions, Events, Incident Center, Lifecycle Center | [Client Pilot](prototypes/client/index.html) |
-| **Continuum Hub** | 본사·솔루션 운영 담당자 | Customers, Environments, Solutions, Incidents, Lifecycle, Knowledge | [Hub Pilot](prototypes/hub/index.html) |
+| **Continuum Client** | 고객 현장 운영 담당자 | Environment, Solutions, Events, Incident Center, Lifecycle Center | [Client Pilot 열기](https://buildupcommon.github.io/continuum/prototypes/client/) |
+| **Continuum Hub** | 본사·솔루션 운영 담당자 | Customers, Environments, Solutions, Incidents, Lifecycle, Knowledge | [Hub Pilot 열기](https://buildupcommon.github.io/continuum/prototypes/hub/) |
 
-> GitHub는 저장소 안의 HTML을 애플리케이션으로 직접 실행하지 않습니다. 저장소를 내려받은 뒤 각 `index.html` 파일을 브라우저로 열어 주세요. 화면에 표시되는 고객명과 운영 데이터는 Pilot 설명을 위한 샘플 데이터입니다.
+> Pilot은 [GitHub Pages](https://buildupcommon.github.io/continuum/)에서 바로 체험할 수 있습니다. 화면에 표시되는 고객명과 운영 데이터는 제품 설명을 위한 샘플 데이터입니다.
 
 ## Product Introduction Deck
 

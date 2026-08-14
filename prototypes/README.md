@@ -2,6 +2,12 @@
 
 Continuum Client와 Hub의 사용자 경험 및 정보 구조를 검증하기 위한 정적 HTML Pilot입니다.
 
+## Live Demo
+
+- [Continuum Pilot Home](https://buildupcommon.github.io/continuum/)
+- [Continuum Client](https://buildupcommon.github.io/continuum/prototypes/client/)
+- [Continuum Hub](https://buildupcommon.github.io/continuum/prototypes/hub/)
+
 ## Pilot 목록
 
 | Pilot | 경로 | 설명 |
