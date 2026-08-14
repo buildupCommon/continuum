@@ -228,6 +228,45 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
 @media(max-width:1320px){.solution-cards,.lifecycle-grid{grid-template-columns:repeat(2,1fr)}.workspace-grid{grid-template-columns:1fr}.metric-mini-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:980px){.solution-cards,.lifecycle-grid,.capability-grid,.policy-grid,.chart-grid,.verify-grid,.config-diff{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.flow-arrow{transform:rotate(90deg)}}
 
+
+/* ===== DEMO INTERACTION LAYER ===== */
+.demo-toast{
+  position:fixed;right:22px;bottom:22px;z-index:200;min-width:260px;max-width:390px;
+  background:#171a20;color:#fff;border:1px solid #2b3038;border-radius:11px;padding:11px 13px;
+  box-shadow:0 14px 36px rgba(0,0,0,.18);font-size:9px;line-height:1.55;
+  opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s
+}
+.demo-toast.show{opacity:1;transform:translateY(0)}
+.demo-toast b{display:block;font-size:10px;margin-bottom:2px}
+.demo-modal-backdrop{
+  position:fixed;inset:0;background:rgba(15,17,21,.42);z-index:150;display:none;
+  align-items:center;justify-content:center;padding:24px
+}
+.demo-modal-backdrop.open{display:flex}
+.demo-modal{
+  width:min(660px,96vw);max-height:86vh;background:#fff;border:1px solid var(--line);
+  border-radius:14px;box-shadow:0 24px 70px rgba(15,20,30,.22);overflow:hidden
+}
+.demo-modal-head{display:flex;justify-content:space-between;gap:12px;padding:14px 15px;border-bottom:1px solid var(--line)}
+.demo-modal-head h3{font-size:12px;margin:0}.demo-modal-head p{font-size:8px;color:var(--muted);margin:3px 0 0}
+.demo-modal-close{border:0;background:#eef0f4;border-radius:8px;width:28px;height:28px;color:#5b6370}
+.demo-modal-body{padding:15px;overflow:auto;max-height:64vh}
+.demo-modal-foot{padding:11px 15px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:7px;background:#fafbfc}
+.demo-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.demo-field label{display:block;font-size:8px;color:var(--muted);font-weight:800;margin-bottom:5px}
+.demo-field input,.demo-field select,.demo-field textarea{
+  width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:9px;background:#fff;color:#353c47
+}
+.demo-field textarea{min-height:76px;resize:vertical}
+.demo-code{
+  background:#171a20;color:#d9dee8;border-radius:9px;padding:10px;font:8px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;
+  white-space:pre-wrap;overflow:auto
+}
+.empty-state{padding:30px 12px;text-align:center;color:var(--muted);font-size:9px;border:1px dashed var(--line);border-radius:10px;grid-column:1/-1}
+.loading-dots:after{content:"";animation:demoDots 1.2s steps(4,end) infinite}
+@keyframes demoDots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
+@media(max-width:720px){.demo-form-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -264,7 +303,7 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
       <div class="top-actions">
         <div class="top-pill">● Hub Connected</div>
         <div class="top-pill">PROD-AI · Seoul DC</div>
-        <div class="top-pill">Policy v18</div>
+        <div class="top-pill">Policy v18</div><div class="top-pill" id="lastPullTopPill">Last Pull · 1m ago</div>
         <div class="avatar">BAE</div>
       </div>
     </header>
@@ -279,7 +318,7 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
             <p>고객 보안 경계 안에서 Solution, Environment, Incident, Lifecycle 상태를 이해하고 운영합니다.</p>
             <div class="brand-line"></div>
           </div>
-          <div class="actions"><button class="btn btn-outline">Export Snapshot</button><button class="btn btn-brand" data-jump="incidents">Open Incident Center</button></div>
+          <div class="actions"><button class="btn btn-outline" id="exportSnapshotBtn">Export Snapshot</button><button class="btn btn-brand" data-jump="incidents">Open Incident Center</button></div>
         </div>
 
         <div class="env-hero">
@@ -297,7 +336,7 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
         </div>
 
         <div class="metric-grid">
-          <div class="metric brand"><div class="metric-label">Discovered Assets</div><div class="metric-value">146</div><div class="metric-sub">Last discovery 3m ago</div></div>
+          <div class="metric brand"><div class="metric-label">Discovered Assets</div><div class="metric-value" id="overviewAssetsValue">146</div><div class="metric-sub" id="overviewDiscoverySub">Last discovery 3m ago</div></div>
           <div class="metric brand"><div class="metric-label">Installed Solutions</div><div class="metric-value">7</div><div class="metric-sub">Catalog match 7 / 7</div></div>
           <div class="metric brand"><div class="metric-label">Operational Events</div><div class="metric-value">18</div><div class="metric-sub">Today · 2 warnings</div></div>
           <div class="metric"><div class="metric-label">Open Incidents</div><div class="metric-value">3</div><div class="metric-sub">1 Major · 2 Minor</div></div>
@@ -323,7 +362,7 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
                 <div class="attention" data-jump="incidents"><div class="attention-icon">!</div><div><b>AI Gateway Response Latency</b><p>Major · Investigating · 1h 47m</p></div><span class="badge red">Incident</span></div>
                 <div class="attention" data-jump="lifecycle"><div class="attention-icon">↗</div><div><b>AI Gateway 1.4.0 available</b><p>Incident-related stability fixes included</p></div><span class="badge blue">Lifecycle</span></div>
                 <div class="attention" data-jump="lifecycle"><div class="attention-icon">△</div><div><b>AI Gateway configuration drift</b><p>connectionPool.max · 100 vs baseline 150</p></div><span class="badge amber">Drift</span></div>
-                <div class="attention"><div class="attention-icon">○</div><div><b>Data Platform Storage</b><p>Object Storage 82% · growth +11%</p></div><span class="badge amber">Capacity</span></div>
+                <div class="attention" data-jump="solutions"><div class="attention-icon">○</div><div><b>Data Platform Storage</b><p>Object Storage 82% · growth +11%</p></div><span class="badge amber">Capacity</span></div>
               </div>
             </div>
           </div>
@@ -363,7 +402,7 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
       <section id="solutions" class="page">
         <div class="page-head">
           <div class="page-title"><div class="eyebrow">Solution Inventory</div><h1>Solutions</h1><p>현재 환경에 설치된 Solution과 Component를 Hub Catalog 기준으로 비교합니다.</p><div class="brand-line"></div></div>
-          <div class="actions"><button class="btn btn-outline">Run Discovery</button></div>
+          <div class="actions"><button class="btn btn-outline" id="runDiscoveryBtn">Run Discovery</button></div>
         </div>
 
         <div class="metric-grid">
@@ -375,16 +414,16 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
         </div>
 
         <div class="filter-row">
-          <input class="search" placeholder="Search solution or component"/>
-          <select><option>All Status</option><option>Healthy</option><option>Warning</option></select>
-          <select><option>Stable Channel</option><option>Early Access</option></select>
+          <input class="search" id="solutionSearch" placeholder="Search solution or component"/>
+          <select id="solutionStatusFilter"><option>All Status</option><option>Healthy</option><option>Warning</option></select>
+          <select id="solutionChannelFilter"><option>All Channels</option><option>Stable Channel</option><option>Early Access</option></select>
         </div>
         <div class="solution-cards" id="solutionCards"></div>
       </section>
 
       <!-- EVENTS -->
       <section id="events" class="page">
-        <div class="page-head"><div class="page-title"><div class="eyebrow">Operational Signals</div><h1>Events</h1><p>수집된 Raw Signal을 Solution Context와 연결해 운영 이벤트로 정제합니다.</p><div class="brand-line"></div></div></div>
+        <div class="page-head"><div class="page-title"><div class="eyebrow">Operational Signals</div><h1>Events</h1><p>수집된 Raw Signal을 Solution Context와 연결해 운영 이벤트로 정제합니다.</p><div class="brand-line"></div></div><div class="actions"><button class="btn btn-outline" id="exportEventsBtn">Export CSV</button><button class="btn btn-brand" id="rerunCorrelationBtn">Re-run Correlation</button></div></div>
 
         <div class="grid-3">
           <div class="metric brand"><div class="metric-label">Raw Signals Today</div><div class="metric-value">4,821</div><div class="metric-sub">Metrics · Logs · Platform</div></div>
@@ -396,10 +435,10 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
           <div class="flow"><div class="flow-box"><b>Raw Signals</b><p>Logs · Metrics · K8s · Configuration</p></div><div class="flow-arrow">→</div><div class="flow-box"><b>Operational Events</b><p>Noise reduction · Context correlation</p></div><div class="flow-arrow">→</div><div class="flow-box"><b>Incident Candidate</b><p>Severity · Impact · Evidence</p></div></div>
         </div></div>
 
-        <div class="filter-row"><input class="search" placeholder="Search events"/><select><option>All Solutions</option><option>AI Gateway</option><option>Data Platform</option></select><select><option>All Severity</option><option>Critical</option><option>Warning</option><option>Info</option></select></div>
+        <div class="filter-row"><input class="search" id="eventSearch" placeholder="Search events"/><select id="eventSolutionFilter"><option>All Solutions</option><option>AI Gateway</option><option>Agent Platform</option><option>AI Platform</option><option>AI Guardrail</option><option>Data Platform</option><option>SK Logging</option><option>SK Monitoring</option></select><select id="eventSeverityFilter"><option>All Severity</option><option>Critical</option><option>Warning</option><option>Info</option></select></div>
         <div class="card"><div class="table-wrap"><table>
           <thead><tr><th>Time</th><th>Severity</th><th>Solution</th><th>Component</th><th>Event</th><th>Source</th></tr></thead>
-          <tbody>
+          <tbody id="eventRows">
             <tr><td>15:43:22</td><td><span class="badge amber">Warning</span></td><td>AI Gateway</td><td>Model Router</td><td><b>Connection Pool usage exceeded 90%</b></td><td>SK Monitoring</td></tr>
             <tr><td>15:40:04</td><td><span class="badge blue">Info</span></td><td>AI Gateway</td><td>Lifecycle</td><td><b>Catalog 1.4.0 metadata synchronized</b></td><td>Hub Pull</td></tr>
             <tr><td>15:21:11</td><td><span class="badge amber">Warning</span></td><td>Data Platform</td><td>Object Storage</td><td><b>Storage usage reached 82%</b></td><td>SK Monitoring</td></tr>
@@ -411,7 +450,7 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
 
       <!-- INCIDENTS -->
       <section id="incidents" class="page">
-        <div class="page-head"><div class="page-title"><div class="eyebrow">Incident Intelligence</div><h1>Incident Center</h1><p>Client에서 수집된 장애 컨텍스트와 Hub Knowledge를 결합해 원인과 해결 경험을 연결합니다.</p><div class="brand-line"></div></div><div class="actions"><button class="btn btn-outline">Download Report</button><button class="btn btn-brand">Create Manual Incident</button></div></div>
+        <div class="page-head"><div class="page-title"><div class="eyebrow">Incident Intelligence</div><h1>Incident Center</h1><p>Client에서 수집된 장애 컨텍스트와 Hub Knowledge를 결합해 원인과 해결 경험을 연결합니다.</p><div class="brand-line"></div></div><div class="actions"><button class="btn btn-outline" id="downloadIncidentReportBtn">Download Report</button><button class="btn btn-brand" id="createIncidentBtn">Create Manual Incident</button></div></div>
 
         <div class="incident-layout">
           <div class="card"><div class="table-wrap"><table>
@@ -437,7 +476,7 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
 
       <!-- LIFECYCLE -->
       <section id="lifecycle" class="page">
-        <div class="page-head"><div class="page-title"><div class="eyebrow">Solution Lifecycle</div><h1>Lifecycle Center</h1><p>Hub Release Policy와 현재 환경을 비교해 Update, Compatibility, Drift, EOS를 관리합니다.</p><div class="brand-line"></div></div><div class="actions"><button class="btn btn-brand">Pull Latest Metadata</button></div></div>
+        <div class="page-head"><div class="page-title"><div class="eyebrow">Solution Lifecycle</div><h1>Lifecycle Center</h1><p>Hub Release Policy와 현재 환경을 비교해 Update, Compatibility, Drift, EOS를 관리합니다.</p><div class="brand-line"></div></div><div class="actions"><button class="btn btn-brand" id="pullMetadataBtn">Pull Latest Metadata</button></div></div>
 
         <div class="metric-grid">
           <div class="metric brand"><div class="metric-label">Up to Date</div><div class="metric-value">1</div><div class="metric-sub">No action required</div></div>
@@ -501,17 +540,17 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
         </div>
 
         <div class="grid-2">
-          <div class="card"><div class="card-head"><div><h3>Hub Connection</h3><span>Secure pull-oriented connection</span></div><span class="badge green">Connected</span></div><div class="card-body">
+          <div class="card"><div class="card-head"><div><h3>Hub Connection</h3><span>Secure pull-oriented connection</span></div><div class="actions"><span class="badge green" id="hubConnectionBadge">Connected</span><button class="btn btn-outline" id="testHubBtn">Test</button><button class="btn btn-soft" id="pullNowBtn">Pull Now</button></div></div><div class="card-body">
             <div class="kv"><span>Direction</span><b>Client → Hub</b></div><div class="kv"><span>Mode</span><b>Pull-oriented</b></div><div class="kv"><span>Catalog</span><b>2026.08.12</b></div><div class="kv"><span>Policy</span><b>v18</b></div><div class="kv"><span>Knowledge Cache</span><b>128 items</b></div>
           </div></div>
           <div class="card"><div class="card-head"><div><h3>Collection Policy</h3><span>Within customer boundary</span></div></div><div class="card-body">
-            <div class="kv"><span>Monitoring Metrics</span><b>Enabled</b></div><div class="kv"><span>Application Logs</span><b>WARN / ERROR</b></div><div class="kv"><span>Platform Events</span><b>Enabled</b></div><div class="kv"><span>Configuration Metadata</span><b>Enabled</b></div><div class="kv"><span>Secret Data</span><b style="color:var(--danger)">Never Collected</b></div>
+            <div class="kv"><span>Monitoring Metrics</span><b>Enabled</b></div><div class="kv"><span>Application Logs</span><b>WARN / ERROR</b></div><div class="kv"><span>Platform Events</span><b>Enabled</b></div><div class="kv"><span>Configuration Metadata</span><b>Enabled</b></div><div class="kv"><span>Secret Data</span><b style="color:var(--danger)">Never Collected</b></div><button class="btn btn-outline" id="previewCollectionBtn" style="margin-top:10px">Preview Collected Data</button>
           </div></div>
           <div class="card"><div class="card-head"><div><h3>Incident Transfer Policy</h3><span>Diagnostic package rules</span></div></div><div class="card-body">
-            <div class="kv"><span>Default Window</span><b>-3m / +2m</b></div><div class="kv"><span>Log Priority</span><b>WARN / ERROR</b></div><div class="kv"><span>Secret Masking</span><b>Required</b></div><div class="kv"><span>Package Transfer</span><b>Customer Approval</b></div><div class="kv"><span>Raw Log Transfer</span><b>Disabled</b></div>
+            <div class="kv"><span>Default Window</span><b>-3m / +2m</b></div><div class="kv"><span>Log Priority</span><b>WARN / ERROR</b></div><div class="kv"><span>Secret Masking</span><b>Required</b></div><div class="kv"><span>Package Transfer</span><b>Customer Approval</b></div><div class="kv"><span>Raw Log Transfer</span><b>Disabled</b></div><button class="btn btn-outline" id="samplePackageBtn" style="margin-top:10px">Generate Sample Package</button>
           </div></div>
           <div class="card"><div class="card-head"><div><h3>Execution Policy</h3><span>Guidance first</span></div></div><div class="card-body">
-            <div class="kv"><span>Automatic Change</span><b>Disabled</b></div><div class="kv"><span>Configuration Apply</span><b>Approval Required</b></div><div class="kv"><span>Upgrade / Rollback</span><b>Approval Required</b></div><div class="kv"><span>Recovery</span><b>Guidance First</b></div><div class="kv"><span>Audit Log</span><b>Enabled</b></div>
+            <div class="kv"><span>Automatic Change</span><b>Disabled</b></div><div class="kv"><span>Configuration Apply</span><b>Approval Required</b></div><div class="kv"><span>Upgrade / Rollback</span><b>Approval Required</b></div><div class="kv"><span>Recovery</span><b>Guidance First</b></div><div class="kv"><span>Audit Log</span><b>Enabled</b></div><button class="btn btn-outline" id="viewAuditBtn" style="margin-top:10px">View Audit Log</button>
           </div></div>
         </div>
       </section>
@@ -522,13 +561,13 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
           <div class="workspace-title-wrap">
             <button class="back-btn" id="workspaceBack">←</button>
             <div>
-              <div class="eyebrow">INC-20260810-001 · Incident Workspace</div>
-              <h1>AI Gateway Response Latency</h1>
-              <div class="workspace-meta"><span class="badge amber">Major</span><span class="badge blue">Investigating</span><span class="badge dark">AI Gateway</span><span class="badge dark">Model Router</span><span class="badge green">Context Synced</span></div>
+              <div class="eyebrow" id="workspaceIncidentEyebrow">INC-20260810-001 · Incident Workspace</div>
+              <h1 id="workspaceIncidentTitle">AI Gateway Response Latency</h1>
+              <div class="workspace-meta"><span class="badge amber" id="workspaceSeverityBadge">Major</span><span class="badge blue" id="workspaceStatusBadge">Investigating</span><span class="badge dark" id="workspaceSolutionBadge">AI Gateway</span><span class="badge dark" id="workspaceComponentBadge">Model Router</span><span class="badge green">Context Synced</span></div>
               <div class="brand-line"></div>
             </div>
           </div>
-          <div class="actions"><button class="btn btn-outline">Generate Report</button><button class="btn btn-brand">Update Status</button></div>
+          <div class="actions"><button class="btn btn-outline" id="generateWorkspaceReportBtn">Generate Report</button><button class="btn btn-brand" id="updateIncidentStatusBtn">Update Status</button></div>
         </div>
 
         <div class="stepper"><div class="step done">Detected</div><div class="step active">Investigating</div><div class="step">Recovery</div><div class="step">Verification</div><div class="step">Resolved</div></div>
@@ -567,7 +606,7 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
 
         <div id="ws-logs" class="workspace-panel">
           <div class="card"><div class="card-head"><div><h3>Application Logs</h3><span>Relevant 28 / 4,821 lines · Secret masked</span></div><span class="badge dark">AI Gateway / Model Router</span></div><div class="card-body">
-            <div class="log-toolbar"><input value="connection pool OR timeout OR upstream"/><button class="btn btn-soft">Filter</button><button class="btn btn-outline">Export</button></div>
+            <div class="log-toolbar"><input id="logSearch" value="connection pool OR timeout OR upstream"/><button class="btn btn-soft" id="logFilterBtn">Filter</button><button class="btn btn-outline" id="logExportBtn">Export</button></div>
             <div class="logbox">
               <div class="logline"><span class="logtime">14:29:48</span><span class="loginfo">INFO</span><span>model-router-2</span><span>pool.active=72 pool.max=100 upstream=llm-serving</span></div>
               <div class="logline"><span class="logtime">14:30:12</span><span class="logwarn">WARN</span><span>model-router-2</span><span>connection pool usage exceeded warning threshold active=86 max=100 usage=86%</span></div>
@@ -611,17 +650,30 @@ select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8p
 
         <div id="ws-recovery" class="workspace-panel">
           <div class="workspace-grid">
-            <div class="card"><div class="card-head"><div><h3>Recovery Plan</h3><span>Guidance first</span></div><span class="badge purple">AI Recommendation</span></div><div class="card-body"><div class="reco ai"><b>Recommended</b><p>Connection Pool 100 → 150 변경 후 Model Router 3개 Instance를 순차 재기동합니다.</p></div><div class="section-label" style="margin-top:14px">Actual Action</div><textarea style="width:100%;min-height:90px;border:1px solid var(--line);border-radius:9px;padding:10px;font-size:9px">Model Router Connection Pool 설정을 100에서 150으로 변경하고 3개 Instance를 순차 재기동 예정.</textarea><button class="btn btn-brand" style="margin-top:10px">Request Approval</button></div></div>
-            <div class="card"><div class="card-head"><div><h3>Change Readiness</h3><span>Customer controlled</span></div></div><div class="card-body"><div class="kv"><span>Config Backup</span><b>Ready</b></div><div class="kv"><span>Rollback Point</span><b>Ready</b></div><div class="kv"><span>Health Check</span><b>Ready</b></div><div class="kv"><span>Customer Approval</span><b style="color:var(--amber)">Pending</b></div></div></div>
+            <div class="card"><div class="card-head"><div><h3>Recovery Plan</h3><span>Guidance first</span></div><span class="badge purple">AI Recommendation</span></div><div class="card-body"><div class="reco ai"><b>Recommended</b><p>Connection Pool 100 → 150 변경 후 Model Router 3개 Instance를 순차 재기동합니다.</p></div><div class="section-label" style="margin-top:14px">Actual Action</div><textarea style="width:100%;min-height:90px;border:1px solid var(--line);border-radius:9px;padding:10px;font-size:9px">Model Router Connection Pool 설정을 100에서 150으로 변경하고 3개 Instance를 순차 재기동 예정.</textarea><button class="btn btn-brand" id="requestApprovalBtn" style="margin-top:10px">Request Approval</button></div></div>
+            <div class="card"><div class="card-head"><div><h3>Change Readiness</h3><span>Customer controlled</span></div></div><div class="card-body"><div class="kv"><span>Config Backup</span><b>Ready</b></div><div class="kv"><span>Rollback Point</span><b>Ready</b></div><div class="kv"><span>Health Check</span><b>Ready</b></div><div class="kv"><span>Customer Approval</span><b id="approvalStatus" style="color:var(--amber)">Pending</b></div></div></div>
           </div>
         </div>
 
         <div id="ws-verification" class="workspace-panel">
-          <div class="card"><div class="card-head"><div><h3>Post-Recovery Verification</h3><span>Automatic validation after recovery</span></div><span class="badge amber">Pending</span></div><div class="card-body"><div class="verify-grid"><div class="verify"><small>P95 Latency · Before 3.2s</small><b>Pending</b><small>Target &lt; 500ms</small></div><div class="verify"><small>Error Rate · Before 4.1%</small><b>Pending</b><small>Target &lt; 0.5%</small></div><div class="verify"><small>Connection Pool · Before 96%</small><b>Pending</b><small>Target &lt; 70%</small></div></div><div class="reco" style="margin-top:10px"><b>Log Verification</b><p>Recovery 이후 10분 동안 Connection Pool Exhaustion / Upstream Timeout 패턴 재발 여부를 자동 확인합니다.</p></div></div></div>
+          <div class="card"><div class="card-head"><div><h3>Post-Recovery Verification</h3><span>Automatic validation after recovery</span></div><div class="actions"><span class="badge amber" id="verificationBadge">Pending</span><button class="btn btn-outline" id="runVerificationBtn">Run Verification</button></div></div><div class="card-body"><div class="verify-grid"><div class="verify"><small>P95 Latency · Before 3.2s</small><b>Pending</b><small>Target &lt; 500ms</small></div><div class="verify"><small>Error Rate · Before 4.1%</small><b>Pending</b><small>Target &lt; 0.5%</small></div><div class="verify"><small>Connection Pool · Before 96%</small><b>Pending</b><small>Target &lt; 70%</small></div></div><div class="reco" style="margin-top:10px"><b>Log Verification</b><p>Recovery 이후 10분 동안 Connection Pool Exhaustion / Upstream Timeout 패턴 재발 여부를 자동 확인합니다.</p></div></div></div>
         </div>
       </section>
     </div>
   </main>
+</div>
+
+
+<div class="demo-toast" id="demoToast"><b id="toastTitle">Done</b><span id="toastMessage"></span></div>
+<div class="demo-modal-backdrop" id="demoModalBackdrop">
+  <div class="demo-modal" role="dialog" aria-modal="true">
+    <div class="demo-modal-head">
+      <div><h3 id="demoModalTitle">Detail</h3><p id="demoModalSubtitle"></p></div>
+      <button class="demo-modal-close" id="demoModalClose">✕</button>
+    </div>
+    <div class="demo-modal-body" id="demoModalBody"></div>
+    <div class="demo-modal-foot" id="demoModalFoot"></div>
+  </div>
 </div>
 
 <script>
@@ -669,7 +721,8 @@ const incidents=[
   ['Critical','red','INC-20260809-014','Agent Runtime Abnormal Termination','Agent Platform','Agent Runtime','08/09 11:14','Resolved'],
   ['Major','amber','INC-20260808-008','PII Detection Processing Error','AI Guardrail','PII Detection','08/08 16:12','Resolved'],
   ['Critical','red','INC-20260807-021','LLM Model Serving Response Failure','AI Platform','Model Serving','08/07 09:42','Resolved'],
-  ['Minor','blue','INC-20260805-011','Application Log Ingestion Delay','SK Logging','Log Collector','08/05 19:21','Resolved']
+  ['Minor','blue','INC-20260805-011','Application Log Ingestion Delay','SK Logging','Log Collector','08/05 19:21','Resolved'],
+  ['Major','amber','INC-20260804-005','Monitoring Metric Collection Missing','SK Monitoring','Metric Collector','08/04 13:22','Resolved']
 ];
 document.getElementById('incidentRows').innerHTML=incidents.map((i,idx)=>`<tr class="clickable incident-row" data-idx="${idx}"><td><span class="badge ${i[1]}">${i[0]}</span></td><td>${i[4]}</td><td>${i[5]}</td><td><b>${i[3]}</b><div class="meta">${i[2]}</div></td><td>${i[6]}</td><td><span class="badge ${i[7]==='Resolved'?'green':i[7]==='Investigating'?'red':'amber'}">${i[7]}</span></td></tr>`).join('');
 
@@ -699,5 +752,1183 @@ document.querySelectorAll('.workspace-tab').forEach(t=>t.addEventListener('click
   document.querySelectorAll('.workspace-panel').forEach(p=>p.classList.toggle('active',p.id===t.dataset.ws));
 }));
 </script>
+
+<script>
+/* =========================================================
+   Continuum Client Demo Interactions
+   ========================================================= */
+(() => {
+  const $ = (s, root=document) => root.querySelector(s);
+  const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+
+  // ---------- common helpers ----------
+  let toastTimer;
+  function toast(title, message){
+    const el = $('#demoToast');
+    $('#toastTitle').textContent = title;
+    $('#toastMessage').textContent = message;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>el.classList.remove('show'), 2600);
+  }
+
+  function openModal(title, subtitle, body, foot=''){
+    $('#demoModalTitle').textContent = title;
+    $('#demoModalSubtitle').textContent = subtitle || '';
+    $('#demoModalBody').innerHTML = body;
+    $('#demoModalFoot').innerHTML = foot || '<button class="btn btn-outline" data-modal-close>Close</button>';
+    $('#demoModalBackdrop').classList.add('open');
+  }
+  function closeModal(){ $('#demoModalBackdrop').classList.remove('open'); }
+  $('#demoModalClose')?.addEventListener('click', closeModal);
+  $('#demoModalBackdrop')?.addEventListener('click', e => { if(e.target.id==='demoModalBackdrop') closeModal(); });
+  document.addEventListener('click', e => { if(e.target.closest('[data-modal-close]')) closeModal(); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+  function download(filename, content, mime='text/plain;charset=utf-8'){
+    const blob = new Blob([content], {type:mime});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 150);
+  }
+
+  function nowTime(){
+    return new Intl.DateTimeFormat('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+  }
+
+  // Rebind data-jump dynamically as new items can be inserted later.
+  document.addEventListener('click', e => {
+    const jump = e.target.closest('[data-jump]');
+    if(jump && typeof showPage === 'function') showPage(jump.dataset.jump);
+  });
+
+  // ---------- overview snapshot ----------
+  $('#exportSnapshotBtn')?.addEventListener('click', () => {
+    const snapshot = {
+      generatedAt: new Date().toISOString(),
+      environment: {name:'PROD-AI', location:'Seoul DC', platform:'OpenShift 4.18', clientVersion:'1.5.0'},
+      hub: {connected:true, direction:'Client → Hub', policy:'v18', catalog:'2026.08.12', knowledgeCache:128},
+      inventory: {discoveredAssets:+($('#overviewAssetsValue')?.textContent || 146), solutions:7, components:35},
+      operations: {events:18, activeIncidents:3, configDrift:2, lifecycleActions:5},
+      solutions: solutions.map(s=>({name:s.name,version:s.version,status:s.status,components:s.components})),
+      incidents: incidents.map(i=>({severity:i[0],id:i[2],title:i[3],solution:i[4],component:i[5],started:i[6],status:i[7]}))
+    };
+    download('continuum-client-snapshot.json', JSON.stringify(snapshot,null,2), 'application/json;charset=utf-8');
+    toast('Snapshot exported', '현재 Client 운영 상태를 JSON 파일로 생성했습니다.');
+  });
+
+  // ---------- discovery ----------
+  $('#runDiscoveryBtn')?.addEventListener('click', async e => {
+    const btn=e.currentTarget, old=btn.textContent;
+    btn.disabled=true; btn.innerHTML='Discovering<span class="loading-dots"></span>';
+    await new Promise(r=>setTimeout(r,850));
+    if($('#overviewAssetsValue')) $('#overviewAssetsValue').textContent='149';
+    if($('#overviewDiscoverySub')) $('#overviewDiscoverySub').textContent='Last discovery · Just now · +3 assets';
+    eventData.unshift({time:nowTime(),severity:'Info',solution:'AI Platform',component:'Discovery Adapter',event:'Discovery completed · 3 new runtime endpoints detected',source:'Client Discovery'});
+    renderEvents();
+    btn.disabled=false; btn.textContent=old;
+    openModal('Discovery Result','PROD-AI · Seoul DC',
+      `<div class="metric-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+        <div class="metric brand"><div class="metric-label">Scanned</div><div class="metric-value">149</div><div class="metric-sub">Assets</div></div>
+        <div class="metric"><div class="metric-label">New</div><div class="metric-value">3</div><div class="metric-sub">Runtime endpoints</div></div>
+        <div class="metric"><div class="metric-label">Changed</div><div class="metric-value">1</div><div class="metric-sub">Configuration</div></div>
+      </div>
+      <div class="section-label">Newly detected</div>
+      <div class="attention-list">
+        <div class="attention"><div class="attention-icon">N</div><div><b>model-serving-worker-08</b><p>AI Platform · GPU Runtime · Healthy</p></div><span class="badge green">New</span></div>
+        <div class="attention"><div class="attention-icon">N</div><div><b>agent-runtime-sidecar-04</b><p>Agent Platform · Runtime · Healthy</p></div><span class="badge green">New</span></div>
+        <div class="attention"><div class="attention-icon">N</div><div><b>metric-exporter-gpu-08</b><p>SK Monitoring · Exporter · Healthy</p></div><span class="badge green">New</span></div>
+      </div>`
+    );
+  });
+
+  // ---------- solution filtering / detail ----------
+  const solutionChannels = {
+    'AI Platform':'Stable Channel','Agent Platform':'Stable Channel','AI Gateway':'Stable Channel',
+    'AI Guardrail':'Early Access','Data Platform':'Stable Channel','SK Logging':'Stable Channel','SK Monitoring':'Stable Channel'
+  };
+  function renderSolutionsEnhanced(){
+    const q=($('#solutionSearch')?.value||'').trim().toLowerCase();
+    const st=$('#solutionStatusFilter')?.value||'All Status';
+    const ch=$('#solutionChannelFilter')?.value||'All Channels';
+    const matched=solutions.filter(s=>{
+      const hay=[s.name,...s.components.map(c=>c[0])].join(' ').toLowerCase();
+      return (!q || hay.includes(q)) && (st==='All Status'||s.status===st) && (ch==='All Channels'||solutionChannels[s.name]===ch);
+    });
+    $('#solutionCards').innerHTML = matched.length ? matched.map(s=>`
+      <div class="solution-card" data-solution-name="${s.name}">
+        <div class="sol-head"><div><h4>${s.name}</h4><div class="sol-meta">v${s.version} · ${s.components.length} Components · ${solutionChannels[s.name]}</div></div><span class="badge ${s.badge}">${s.status}</span></div>
+        <div class="comp-list">${s.components.slice(0,4).map(c=>`<div class="comp"><span>${c[0]}</span><span class="badge ${c[1]==='Healthy'?'green':'amber'}">${c[1]}</span></div>`).join('')}</div>
+        ${s.note?`<div class="meta" style="margin-top:9px">${s.note}</div>`:''}
+      </div>`).join('') : '<div class="empty-state">조건에 맞는 Solution / Component가 없습니다.</div>';
+  }
+  ['solutionSearch','solutionStatusFilter','solutionChannelFilter'].forEach(id=>{
+    $('#'+id)?.addEventListener(id==='solutionSearch'?'input':'change',renderSolutionsEnhanced);
+  });
+  $('#solutionCards')?.addEventListener('click', e=>{
+    const card=e.target.closest('[data-solution-name]'); if(!card) return;
+    const s=solutions.find(x=>x.name===card.dataset.solutionName); if(!s) return;
+    const drift=s.name==='AI Gateway'
+      ? `<div class="attention"><div class="attention-icon">△</div><div><b>connectionPool.max</b><p>Current 100 · Hub Baseline 150</p></div><span class="badge amber">Drift</span></div>`
+      : `<div class="attention"><div class="attention-icon">✓</div><div><b>Configuration Baseline</b><p>No critical drift detected</p></div><span class="badge green">Matched</span></div>`;
+    const dep = s.name==='AI Gateway' ? 'AI Platform / Model Serving · SK Monitoring' :
+                s.name==='Agent Platform' ? 'AI Gateway / Tool endpoints' :
+                s.name==='Data Platform' ? 'Object Storage / Search Engine' : 'No blocking dependency';
+    openModal(s.name,`v${s.version} · ${solutionChannels[s.name]}`,
+      `<div class="grid-2" style="margin-bottom:10px">
+        <div class="card"><div class="card-head"><div><h3>Components</h3><span>${s.components.length} discovered</span></div></div><div class="card-body">${s.components.map(c=>`<div class="kv"><span>${c[0]}</span><b><span class="badge ${c[1]==='Healthy'?'green':'amber'}">${c[1]}</span></b></div>`).join('')}</div></div>
+        <div class="card"><div class="card-head"><div><h3>Environment Context</h3><span>Catalog matched</span></div></div><div class="card-body">
+          <div class="kv"><span>Platform</span><b>OpenShift 4.18</b></div>
+          <div class="kv"><span>Channel</span><b>${solutionChannels[s.name]}</b></div>
+          <div class="kv"><span>Hub Baseline</span><b>Policy v18</b></div>
+          <div class="kv"><span>Dependency</span><b>${dep}</b></div>
+        </div></div>
+      </div>
+      <div class="section-label">Configuration</div>${drift}`,
+      `<button class="btn btn-outline" data-modal-close>Close</button><button class="btn btn-brand" id="modalOpenLifecycle">Open Lifecycle</button>`
+    );
+    setTimeout(()=>$('#modalOpenLifecycle')?.addEventListener('click',()=>{closeModal();showPage('lifecycle');}),0);
+  });
+  renderSolutionsEnhanced();
+
+  // ---------- events ----------
+  const eventData = [
+    {time:'15:43:22',severity:'Warning',solution:'AI Gateway',component:'Model Router',event:'Connection Pool usage exceeded 90%',source:'SK Monitoring'},
+    {time:'15:40:04',severity:'Info',solution:'AI Gateway',component:'Lifecycle',event:'Catalog 1.4.0 metadata synchronized',source:'Hub Pull'},
+    {time:'15:21:11',severity:'Warning',solution:'Data Platform',component:'Object Storage',event:'Storage usage reached 82%',source:'SK Monitoring'},
+    {time:'14:32:14',severity:'Critical',solution:'AI Gateway',component:'Model Router',event:'Latency P95 threshold exceeded',source:'Correlation Engine'},
+    {time:'13:12:33',severity:'Info',solution:'Agent Platform',component:'Agent Registry',event:'New release metadata available',source:'Hub Catalog'},
+    {time:'11:48:07',severity:'Info',solution:'SK Monitoring',component:'Metric Collector',event:'GPU exporter target synchronized',source:'Discovery Adapter'},
+    {time:'10:31:55',severity:'Warning',solution:'SK Logging',component:'Log Collector',event:'Ingestion delay exceeded 60 seconds',source:'SK Monitoring'},
+    {time:'09:14:18',severity:'Info',solution:'AI Guardrail',component:'Policy Engine',event:'Policy bundle v43 activated locally',source:'Policy Sync'}
+  ];
+  const badgeBySeverity={Critical:'red',Warning:'amber',Info:'blue'};
+  function filteredEvents(){
+    const q=($('#eventSearch')?.value||'').trim().toLowerCase();
+    const sol=$('#eventSolutionFilter')?.value||'All Solutions';
+    const sev=$('#eventSeverityFilter')?.value||'All Severity';
+    return eventData.filter(x=>{
+      const hay=[x.solution,x.component,x.event,x.source].join(' ').toLowerCase();
+      return (!q||hay.includes(q)) && (sol==='All Solutions'||x.solution===sol) && (sev==='All Severity'||x.severity===sev);
+    });
+  }
+  function renderEvents(){
+    const rows=filteredEvents();
+    $('#eventRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${x.time}</td><td><span class="badge ${badgeBySeverity[x.severity]}">${x.severity}</span></td><td>${x.solution}</td><td>${x.component}</td><td><b>${x.event}</b></td><td>${x.source}</td></tr>`).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px">조건에 맞는 Event가 없습니다.</td></tr>';
+  }
+  ['eventSearch','eventSolutionFilter','eventSeverityFilter'].forEach(id=>$('#'+id)?.addEventListener(id==='eventSearch'?'input':'change',renderEvents));
+  $('#exportEventsBtn')?.addEventListener('click',()=>{
+    const rows=filteredEvents();
+    const csv=['Time,Severity,Solution,Component,Event,Source',...rows.map(x=>[x.time,x.severity,x.solution,x.component,x.event,x.source].map(v=>`"${String(v).replaceAll('"','""')}"`).join(','))].join('\n');
+    download('continuum-events.csv','\ufeff'+csv,'text/csv;charset=utf-8');
+    toast('Events exported',`${rows.length}개 Event를 CSV로 저장했습니다.`);
+  });
+  $('#rerunCorrelationBtn')?.addEventListener('click',async e=>{
+    const b=e.currentTarget, old=b.textContent;b.disabled=true;b.innerHTML='Correlating<span class="loading-dots"></span>';
+    await new Promise(r=>setTimeout(r,700));
+    eventData.unshift({time:nowTime(),severity:'Info',solution:'SK Monitoring',component:'Correlation Engine',event:'Correlation completed · 4,826 signals → 19 operational events → 3 candidates',source:'Local AI'});
+    renderEvents(); b.disabled=false;b.textContent=old;
+    toast('Correlation complete','새로운 운영 Event 1건을 생성했습니다.');
+  });
+  renderEvents();
+
+  // ---------- lifecycle ----------
+  const lifecycleOverride = {};
+  function renderLifecycleEnhanced(){
+    $('#lifecycleGrid').innerHTML=life.map(x=>{
+      const o=lifecycleOverride[x[0]];
+      const state=o?.state||x[2], badge=o?.badge||x[3], note=o?.note||x[4];
+      return `<div class="lifecycle-card" data-life-card="${x[0]}"><div style="display:flex;justify-content:space-between;gap:8px"><h4>${x[0]}</h4><span class="badge ${badge}">${state}</span></div><p><b>${x[1]}</b></p><p>${note}</p></div>`;
+    }).join('');
+  }
+  function lifecycleDetail(name){
+    const x=life.find(v=>v[0]===name); if(!x) return;
+    const isGateway=name==='AI Gateway', isLogging=name==='SK Logging';
+    const body=`
+      <div class="metric-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+        <div class="metric brand"><div class="metric-label">Current / Target</div><div class="metric-value" style="font-size:14px">${x[1]}</div><div class="metric-sub">Stable Channel</div></div>
+        <div class="metric"><div class="metric-label">Compatibility</div><div class="metric-value" style="font-size:16px">PASS</div><div class="metric-sub">OpenShift 4.18</div></div>
+        <div class="metric"><div class="metric-label">Rollback</div><div class="metric-value" style="font-size:16px">YES</div><div class="metric-sub">Snapshot available</div></div>
+      </div>
+      <div class="section-label">Environment Impact</div>
+      <div class="kv"><span>Dependencies</span><b>${isGateway?'No blocking dependency · Model Serving healthy':'No blocking dependency'}</b></div>
+      <div class="kv"><span>Config Migration</span><b>${isGateway?'connectionPool baseline 100 → 150':isLogging?'Collector config migration required':'None / Compatible'}</b></div>
+      <div class="kv"><span>Expected Downtime</span><b>${isLogging?'None expected':'Rolling update · None expected'}</b></div>
+      <div class="kv"><span>Execution</span><b>Customer Approval Required</b></div>
+      <div class="reco ai"><b>${isGateway?'Why recommended':isLogging?'Why plan now':'Release Note'}</b><p>${isGateway?'INC-20260810-001과 동일한 Connection Pool / timeout 안정성 개선이 포함되어 있습니다.':isLogging?'3.x 지원 종료 전 안정화 기간 확보를 위해 9월 내 전환을 권장합니다.':x[4]}</p></div>`;
+    const primary=isLogging?'Plan Migration':'Schedule Update';
+    openModal(name,'Lifecycle Detail',body,
+      `<button class="btn btn-outline" data-modal-close>Close</button><button class="btn btn-soft" id="lifeReviewedBtn">Mark Reviewed</button><button class="btn btn-brand" id="lifeScheduleBtn">${primary}</button>`
+    );
+    setTimeout(()=>{
+      $('#lifeReviewedBtn')?.addEventListener('click',()=>{lifecycleOverride[name]={...(lifecycleOverride[name]||{}),note:'Reviewed by local operator · '+nowTime()};renderLifecycleEnhanced();closeModal();toast('Marked as reviewed',name+' 검토 상태를 기록했습니다.');});
+      $('#lifeScheduleBtn')?.addEventListener('click',()=>{
+        lifecycleOverride[name]={state:isLogging?'Migration Planned':'Scheduled',badge:'purple',note:isLogging?'Migration window · 2026-09-20 02:00':'Maintenance window · 2026-08-16 02:00'};
+        renderLifecycleEnhanced();closeModal();toast(isLogging?'Migration planned':'Update scheduled',name+' 실행 일정을 샘플 데이터에 반영했습니다.');
+      });
+    },0);
+  }
+  $('#lifecycleGrid')?.addEventListener('click',e=>{const c=e.target.closest('[data-life-card]');if(c) lifecycleDetail(c.dataset.lifeCard);});
+  document.addEventListener('click',e=>{const x=e.target.closest('[data-life]');if(x) lifecycleDetail(x.dataset.life);});
+  renderLifecycleEnhanced();
+
+  async function pullMetadata(trigger){
+    if(trigger){trigger.disabled=true;trigger.innerHTML='Pulling<span class="loading-dots"></span>';}
+    await new Promise(r=>setTimeout(r,650));
+    if($('#lastPullTopPill')) $('#lastPullTopPill').textContent='Last Pull · Just now';
+    eventData.unshift({time:nowTime(),severity:'Info',solution:'AI Gateway',component:'Lifecycle',event:'Hub metadata pull completed · Catalog / Policy / Knowledge refreshed',source:'Hub Pull'});
+    renderEvents();
+    if(trigger){trigger.disabled=false;trigger.textContent=trigger.dataset.oldText||'Pull Latest Metadata';}
+    toast('Hub metadata refreshed','Catalog 2026.08.12 · Policy v18 · Knowledge 128 items');
+  }
+  $('#pullMetadataBtn')?.addEventListener('click',e=>{e.currentTarget.dataset.oldText=e.currentTarget.textContent;pullMetadata(e.currentTarget);});
+
+  // ---------- incidents ----------
+  let currentIncidentIdx=0;
+  function renderIncidentRowsEnhanced(){
+    $('#incidentRows').innerHTML=incidents.map((i,idx)=>`<tr class="clickable incident-row" data-idx="${idx}"><td><span class="badge ${i[1]}">${i[0]}</span></td><td>${i[4]}</td><td>${i[5]}</td><td><b>${i[3]}</b><div class="meta">${i[2]}</div></td><td>${i[6]}</td><td><span class="badge ${i[7]==='Resolved'?'green':i[7]==='Investigating'?'red':i[7]==='Recovering'?'purple':'amber'}">${i[7]}</span></td></tr>`).join('');
+  }
+  $('#incidentRows')?.addEventListener('click',e=>{
+    const r=e.target.closest('.incident-row'); if(!r)return;
+    currentIncidentIdx=+r.dataset.idx;
+    incidentQuick(incidents[currentIncidentIdx]);
+  });
+  renderIncidentRowsEnhanced();
+  incidentQuick(incidents[0]);
+
+  function workspaceIncidentIndex(){
+    return incidents.findIndex(i=>i[2]==='INC-20260810-001');
+  }
+  function workspaceIncident(){
+    const idx=workspaceIncidentIndex();
+    return idx>=0 ? incidents[idx] : incidents[0];
+  }
+
+  function incidentMarkdown(i, detailed=false){
+    const lines=[
+      '# Continuum Incident Report','',
+      `- Incident ID: ${i[2]}`,`- Title: ${i[3]}`,`- Severity: ${i[0]}`,`- Solution: ${i[4]}`,`- Component: ${i[5]}`,`- Started: ${i[6]}`,`- Status: ${i[7]}`,'',
+      '## Executive Summary',
+      i[2]==='INC-20260810-001'
+        ? '14:32부터 AI Gateway 평균 응답시간이 420ms에서 3.2초로 증가했고 Connection Pool 사용률이 96%까지 상승했습니다.'
+        : 'Client가 수집한 Logs, Metrics, Events를 기반으로 Incident Context를 구성했습니다.','',
+      '## Evidence'
+    ];
+    if(i[2]==='INC-20260810-001'){
+      lines.push('- P95 Latency: 420ms → 3.2s','- Error Rate: 0.2% → 4.1%','- Connection Pool: 48% → 96%','- CPU: 52% → 87%','',
+        '## AI Intelligence','- Probable Cause: Connection Pool Exhaustion','- Confidence: 92%','- Similar Incident: INC-20260418-007 (91%)','',
+        '## Recommended Recovery','1. Connection Pool 100 → 150','2. Model Router Rolling Restart','3. Verify upstream connectivity');
+    } else {
+      lines.push('- Relevant logs and metrics packaged by Client','- Secrets masked before transfer','', '## AI Intelligence','- Analysis in progress');
+    }
+    if(detailed) lines.push('','## Governance','- Read-only by Default','- Customer Approval Required for changes','- Raw Log Transfer: Disabled');
+    return lines.join('\n');
+  }
+  $('#downloadIncidentReportBtn')?.addEventListener('click',()=>{
+    const i=incidents[currentIncidentIdx];
+    download(`${i[2]}_report.md`,incidentMarkdown(i,true),'text/markdown;charset=utf-8');
+    toast('Incident report downloaded',i[2]+' 보고서를 Markdown으로 생성했습니다.');
+  });
+  $('#generateWorkspaceReportBtn')?.addEventListener('click',()=>{
+    const i=workspaceIncident();
+    download(`${i[2]}_workspace_report.md`,incidentMarkdown(i,true),'text/markdown;charset=utf-8');
+    toast('Workspace report generated','Monitoring / Logs / AI Intelligence 내용을 포함했습니다.');
+  });
+
+  $('#createIncidentBtn')?.addEventListener('click',()=>{
+    openModal('Create Manual Incident','운영자가 직접 등록하는 샘플 Incident',
+      `<div class="demo-form-grid">
+        <div class="demo-field"><label>Title</label><input id="newIncidentTitle" value="AI Portal 로그인 간헐적 실패"/></div>
+        <div class="demo-field"><label>Severity</label><select id="newIncidentSeverity"><option>Minor</option><option selected>Major</option><option>Critical</option></select></div>
+        <div class="demo-field"><label>Solution</label><select id="newIncidentSolution">${solutions.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
+        <div class="demo-field"><label>Component</label><input id="newIncidentComponent" value="AI Portal"/></div>
+        <div class="demo-field" style="grid-column:1/-1"><label>Description</label><textarea id="newIncidentDesc">일부 사용자 로그인 요청에서 인증 응답 지연이 확인되어 수동 Incident를 생성합니다.</textarea></div>
+      </div>`,
+      `<button class="btn btn-outline" data-modal-close>Cancel</button><button class="btn btn-brand" id="submitManualIncident">Create Incident</button>`
+    );
+    setTimeout(()=>$('#submitManualIncident')?.addEventListener('click',()=>{
+      const title=$('#newIncidentTitle').value.trim(); if(!title){toast('Required','Title을 입력해주세요.');return;}
+      const sev=$('#newIncidentSeverity').value, badge=sev==='Critical'?'red':sev==='Major'?'amber':'blue';
+      const sol=$('#newIncidentSolution').value, comp=$('#newIncidentComponent').value.trim()||'Unknown Component';
+      const seq=String(incidents.length+1).padStart(3,'0');
+      const id='INC-20260814-'+seq;
+      incidents.unshift([sev,badge,id,title,sol,comp,'08/14 '+nowTime().slice(0,5),'Detected']);
+      currentIncidentIdx=0;renderIncidentRowsEnhanced();incidentQuick(incidents[0]);closeModal();
+      eventData.unshift({time:nowTime(),severity:sev==='Critical'?'Critical':'Warning',solution:sol,component:comp,event:'Manual Incident created · '+id,source:'Operator'});
+      renderEvents();toast('Incident created',id+'가 Incident Center에 추가되었습니다.');
+    }),0);
+  });
+
+  // Workspace status update
+  function applyWorkspaceStatus(status){
+    const idx=workspaceIncidentIndex();
+    if(idx<0) return;
+    incidents[idx][7]=status;
+    renderIncidentRowsEnhanced();
+    currentIncidentIdx=idx; incidentQuick(incidents[idx]);
+    if($('#workspaceStatusBadge')){
+      $('#workspaceStatusBadge').textContent=status;
+      $('#workspaceStatusBadge').className='badge '+(status==='Resolved'?'green':status==='Recovering'?'purple':'blue');
+    }
+    const steps=$$('.stepper .step');
+    const map={Investigating:1,Recovering:2,Resolved:4}, active=map[status]??1;
+    steps.forEach((s,idx)=>{s.classList.remove('done','active'); if(idx<active)s.classList.add('done'); else if(idx===active)s.classList.add(status==='Resolved'?'done':'active');});
+  }
+  $('#updateIncidentStatusBtn')?.addEventListener('click',()=>{
+    openModal('Update Incident Status','INC-20260810-001',
+      `<div class="demo-field"><label>Status</label><select id="workspaceStatusSelect"><option>Investigating</option><option>Recovering</option><option>Resolved</option></select></div>
+       <div class="demo-field" style="margin-top:10px"><label>Operator Note</label><textarea id="workspaceStatusNote">상태 변경 사유를 기록합니다.</textarea></div>`,
+      `<button class="btn btn-outline" data-modal-close>Cancel</button><button class="btn btn-brand" id="applyWorkspaceStatusBtn">Apply</button>`
+    );
+    setTimeout(()=>$('#applyWorkspaceStatusBtn')?.addEventListener('click',()=>{
+      const st=$('#workspaceStatusSelect').value;applyWorkspaceStatus(st);closeModal();toast('Incident status updated','INC-20260810-001 · '+st);
+    }),0);
+  });
+
+  // ---------- logs ----------
+  function filterLogs(){
+    const raw=($('#logSearch')?.value||'').toLowerCase();
+    const terms=raw.split(/\s+or\s+/i).map(x=>x.trim()).filter(Boolean);
+    let visible=0;
+    $$('#ws-logs .logline').forEach(line=>{
+      const ok=!terms.length||terms.some(t=>line.textContent.toLowerCase().includes(t));
+      line.style.display=ok?'grid':'none'; if(ok)visible++;
+    });
+    toast('Log filter applied',`${visible}개 샘플 로그가 표시됩니다.`);
+  }
+  $('#logFilterBtn')?.addEventListener('click',filterLogs);
+  $('#logSearch')?.addEventListener('keydown',e=>{if(e.key==='Enter')filterLogs();});
+  $('#logExportBtn')?.addEventListener('click',()=>{
+    const lines=$$('#ws-logs .logline').filter(x=>x.style.display!=='none').map(x=>x.textContent.replace(/\s+/g,' ').trim()).join('\n');
+    download('INC-20260810-001_filtered_logs.txt',lines);
+    toast('Logs exported','현재 필터 결과를 TXT로 저장했습니다.');
+  });
+
+  // ---------- recovery approval ----------
+  $('#requestApprovalBtn')?.addEventListener('click',()=>{
+    openModal('Recovery Approval','Customer-controlled change request',
+      `<div class="section-label">Requested Action</div>
+       <div class="reco ai"><b>AI Gateway Recovery</b><p>Connection Pool 100 → 150 · Model Router Rolling Restart</p></div>
+       <div class="kv"><span>Risk</span><b>Low</b></div><div class="kv"><span>Rollback</span><b>Ready</b></div><div class="kv"><span>Expected Downtime</span><b>None</b></div>
+       <div class="kv"><span>Requested By</span><b>김OO · Local Operator</b></div>`,
+      `<button class="btn btn-outline" id="rejectApprovalBtn">Reject Demo</button><button class="btn btn-brand" id="approveApprovalBtn">Approve Demo</button>`
+    );
+    setTimeout(()=>{
+      $('#approveApprovalBtn')?.addEventListener('click',()=>{const a=$('#approvalStatus');a.textContent='Approved';a.style.color='var(--green)';$('#requestApprovalBtn').textContent='Approved';$('#requestApprovalBtn').disabled=true;closeModal();applyWorkspaceStatus('Recovering');toast('Recovery approved','변경 작업을 수행할 준비가 되었습니다.');});
+      $('#rejectApprovalBtn')?.addEventListener('click',()=>{const a=$('#approvalStatus');a.textContent='Rejected';a.style.color='var(--danger)';closeModal();toast('Recovery rejected','승인 거절 이력을 Audit Log에 기록했습니다.');});
+    },0);
+  });
+
+  // ---------- verification ----------
+  $('#runVerificationBtn')?.addEventListener('click',async e=>{
+    const b=e.currentTarget, old=b.textContent;b.disabled=true;b.innerHTML='Verifying<span class="loading-dots"></span>';
+    await new Promise(r=>setTimeout(r,900));
+    const vals=['380ms','0.2%','54%'];
+    $$('#ws-verification .verify b').forEach((x,i)=>x.textContent=vals[i]||'Passed');
+    $('#verificationBadge').textContent='Passed';$('#verificationBadge').className='badge green';
+    b.textContent='Verified';b.disabled=true;
+    applyWorkspaceStatus('Resolved');
+    toast('Verification passed','Latency, Error Rate, Connection Pool 모두 정상 범위입니다.');
+  });
+
+  // ---------- settings tools ----------
+  $('#testHubBtn')?.addEventListener('click',async e=>{
+    const b=e.currentTarget;b.disabled=true;b.textContent='Testing…';$('#hubConnectionBadge').textContent='Testing';$('#hubConnectionBadge').className='badge blue';
+    await new Promise(r=>setTimeout(r,650));
+    $('#hubConnectionBadge').textContent='Connected';$('#hubConnectionBadge').className='badge green';b.disabled=false;b.textContent='Test';
+    toast('Hub connection healthy','TLS · Authentication · Policy endpoint 응답 정상');
+  });
+  $('#pullNowBtn')?.addEventListener('click',e=>{e.currentTarget.dataset.oldText='Pull Now';pullMetadata(e.currentTarget);});
+  $('#previewCollectionBtn')?.addEventListener('click',()=>openModal('Collected Data Preview','Secret / credential 값은 포함되지 않습니다.',
+    `<div class="demo-code">{
+  "environment": "PROD-AI",
+  "solution": "AI Gateway",
+  "component": "Model Router",
+  "version": "1.3.2",
+  "status": "Warning",
+  "metrics": {{
+    "latency_p95_ms": 3200,
+    "connection_pool_usage": 0.96
+  }},
+  "config_metadata": {{
+    "connectionPool.max": 100,
+    "request.timeout_ms": 3000
+  }},
+  "secrets": "[NOT COLLECTED]"
+}</div>`));
+  $('#samplePackageBtn')?.addEventListener('click',()=>openModal('Diagnostic Package Preview','Incident transfer policy · customer approval required',
+    `<div class="attention-list">
+      <div class="attention"><div class="attention-icon">M</div><div><b>metrics.json</b><p>Incident -3m / +2m · 4 selected metrics</p></div><span class="badge green">Included</span></div>
+      <div class="attention"><div class="attention-icon">L</div><div><b>logs.ndjson</b><p>WARN / ERROR prioritized · 28 / 4,821 lines</p></div><span class="badge green">Masked</span></div>
+      <div class="attention"><div class="attention-icon">E</div><div><b>events.json</b><p>8 correlated events</p></div><span class="badge green">Included</span></div>
+      <div class="attention"><div class="attention-icon">C</div><div><b>context.json</b><p>Version · Config · Topology · Platform</p></div><span class="badge green">Included</span></div>
+      <div class="attention"><div class="attention-icon">R</div><div><b>raw-logs.tar</b><p>Raw log transfer is disabled by policy</p></div><span class="badge red">Excluded</span></div>
+    </div>`));
+  $('#viewAuditBtn')?.addEventListener('click',()=>openModal('Audit Log','Recent Client control-plane actions',
+    `<div class="timeline">
+      <div class="tl"><b>17:31 · Hub metadata pull</b><p>Catalog / Policy / Knowledge · Success · Client initiated</p></div>
+      <div class="tl"><b>16:52 · Incident context package created</b><p>INC-20260810-001 · Secrets masked</p></div>
+      <div class="tl"><b>16:48 · Configuration drift detected</b><p>AI Gateway · connectionPool.max · Read-only</p></div>
+      <div class="tl"><b>15:40 · Solution catalog synchronized</b><p>7 / 7 Solution match</p></div>
+      <div class="tl"><b>14:32 · Incident automatically created</b><p>AI Gateway Response Latency · Local correlation</p></div>
+    </div>`));
+
+  // Keep overview attention and dynamic interactions visually keyboard-friendly.
+  $$('.attention, .solution-card, .lifecycle-card').forEach(x=>x.setAttribute('tabindex','0'));
+
+  console.info('[Continuum Client Demo] interaction layer initialized');
+})();
+</script>
+
+
+<script>
+/* =========================================================
+   MULTI-INCIDENT WORKSPACE DATA
+   Every Incident now supports full Incident Workspace.
+   ========================================================= */
+(() => {
+  const incidentDetailMap = {
+    "INC-20260810-001": {
+      severity:"Major", severityBadge:"amber", status:"Investigating",
+      solution:"AI Gateway", component:"Model Router", version:"1.3.2",
+      platform:"OpenShift 4.18", assignee:"김OO", detection:"SK Monitoring",
+      summary:"14:32부터 AI Gateway 평균 응답시간이 420ms에서 3.2초까지 증가했습니다. Model Router Connection Pool 사용률이 같은 시점에 96%까지 상승했고 전체 요청 중 약 8.7%가 지연 또는 Timeout 영향을 받았습니다.",
+      cause:"Connection Pool Exhaustion", confidence:92,
+      metrics:[
+        {name:"P95 Latency",value:"3.2s",before:"420ms",delta:"+662%",target:"< 500ms",after:"380ms"},
+        {name:"Error Rate",value:"4.1%",before:"0.2%",delta:"+3.9pp",target:"< 0.5%",after:"0.2%"},
+        {name:"Connection Pool",value:"96%",before:"48%",delta:"Threshold 85%",target:"< 70%",after:"54%"},
+        {name:"CPU",value:"87%",before:"52%",delta:"+35pp",target:"< 70%",after:"58%"}
+      ],
+      events:[
+        ["14:29:57","Metric","blue","Latency anomaly detected · P95 780ms (+85%)."],
+        ["14:30:14","Threshold","amber","Model Router Connection Pool crossed 85% warning threshold."],
+        ["14:31:08","Platform","amber","Pending request queue exceeded 30."],
+        ["14:31:43","Metric","amber","Latency P95 crossed 2 seconds."],
+        ["14:32:11","Error","red","First upstream timeout detected."],
+        ["14:32:14","Incident","red","Incident automatically created."],
+        ["14:33:02","Metric","red","Error Rate crossed 4% critical threshold."],
+        ["14:35:10","AI","purple","Evidence correlation and similar incident search completed."]
+      ],
+      logs:[
+        ["14:29:48","INFO","model-router-2","pool.active=72 pool.max=100 upstream=llm-serving"],
+        ["14:30:12","WARN","model-router-2","connection pool usage exceeded warning threshold active=86 max=100 usage=86%"],
+        ["14:30:38","WARN","model-router-1","waiting for upstream connection wait_ms=842 queue_depth=41"],
+        ["14:31:05","WARN","model-router-2","connection pool nearing exhaustion active=93 idle=2 pending=38"],
+        ["14:31:52","WARN","model-router-2","connection pool usage 96% active=96 max=100 pending=51"],
+        ["14:32:03","WARN","model-router-1","request processing delayed request_id=8c1*** elapsed_ms=2194"],
+        ["14:32:11","ERROR","model-router-2","upstream request timeout request_id=91f*** timeout_ms=3000 upstream=llm-serving"],
+        ["14:32:21","ERROR","model-router-2","failed to acquire connection from pool after 3000ms pending=64"]
+      ],
+      evidence:[
+        "Connection Pool usage rose from 48% to 96% before the first timeout.",
+        "Pending request queue increased to 64 while upstream response remained within normal range.",
+        "Timeout logs repeatedly show failure to acquire an available connection.",
+        "No memory pressure, pod restart, or upstream outage was detected."
+      ],
+      recommendations:[
+        ["Connection Pool 100 → 150","현재 peak concurrency와 과거 유사 Incident 해결 이력을 기준으로 권장합니다."],
+        ["Model Router Rolling Restart","전체 서비스 중단 없이 설정을 적용합니다."],
+        ["Verify Upstream Connectivity","LLM Serving endpoint latency와 Error Rate를 확인합니다."]
+      ],
+      similar:[
+        ["INC-20260418-007","91%","Connection Pool Exhaustion","Restart → Pool 100→150 → Upstream check"],
+        ["INC-20260203-003","78%","Peak traffic with insufficient pool","Pool size tuning"]
+      ],
+      lifecycle:"AI Gateway 1.4.0 · Connection Pool / timeout stability fixes",
+      recovery:"Connection Pool 설정을 100에서 150으로 변경하고 Model Router 3개 Instance를 순차 재기동.",
+      verification:"Recovery 이후 10분간 Connection Pool Exhaustion / Upstream Timeout 패턴 재발 여부를 자동 확인합니다."
+    },
+
+    "INC-20260810-002": {
+      severity:"Minor", severityBadge:"blue", status:"Detected",
+      solution:"Data Platform", component:"Object Storage", version:"5.1.0",
+      platform:"OpenShift 4.18", assignee:"박OO", detection:"SK Monitoring",
+      summary:"Object Storage 사용률이 90% 임계치를 초과해 Incident가 생성되었습니다. 최근 7일간 일 평균 1.6%p 증가 추세이며 Archive 대상 데이터 증가가 주요 원인으로 분석됩니다.",
+      cause:"Storage Capacity Exhaustion Risk", confidence:89,
+      metrics:[
+        {name:"Storage Usage",value:"92%",before:"82%",delta:"+10pp / 7d",target:"< 80%",after:"74%"},
+        {name:"Daily Growth",value:"1.6%p",before:"0.7%p",delta:"+129%",target:"< 0.8%p",after:"0.6%p"},
+        {name:"Archive Queue",value:"1.8TB",before:"0.4TB",delta:"+350%",target:"< 0.5TB",after:"0.3TB"},
+        {name:"Search Index",value:"1.9TB",before:"1.7TB",delta:"+11.8%",target:"Stable",after:"1.8TB"}
+      ],
+      events:[
+        ["15:21:11","Threshold","amber","Object Storage usage reached 82% warning threshold."],
+        ["15:33:04","Metric","amber","Storage growth rate exceeded 1.5%p/day."],
+        ["15:37:40","Platform","blue","Archive queue exceeded 1.5TB."],
+        ["15:41:11","Incident","red","Storage capacity Incident automatically created."],
+        ["15:42:30","AI","purple","Capacity trend and archive backlog correlated."]
+      ],
+      logs:[
+        ["15:33:04","WARN","object-store-1","disk_usage=89.1% free_bytes=5.2TB growth_rate=1.5pp_day"],
+        ["15:37:40","WARN","archive-manager","archive_queue_bytes=1.6TB pending_objects=184220"],
+        ["15:40:56","WARN","object-store-2","disk_usage=91.7% threshold=90%"],
+        ["15:41:11","ERROR","capacity-controller","capacity threshold breached usage=92.0%"],
+        ["15:42:30","INFO","incident-agent","capacity forecast completed estimated_days_to_95=2"]
+      ],
+      evidence:[
+        "Storage usage increased from 82% to 92% over seven days.",
+        "Archive Queue increased to 1.8TB while scheduled archive throughput remained unchanged.",
+        "No abnormal write burst from a single application was detected.",
+        "Search Index growth contributes about 22% of recent capacity consumption."
+      ],
+      recommendations:[
+        ["Run Archive Policy Immediately","30일 초과 로그 및 중간 산출물을 Archive 대상으로 전환합니다."],
+        ["Increase Archive Throughput","Archive Worker를 2 → 4로 확장합니다."],
+        ["Plan Data Platform 5.2.0","Index Lifecycle 및 Storage Optimization 기능을 적용합니다."]
+      ],
+      similar:[
+        ["INC-20260522-011","87%","Archive backlog capacity pressure","Archive workers scale-out"],
+        ["INC-20260315-006","74%","Search Index growth","Index lifecycle policy applied"]
+      ],
+      lifecycle:"Data Platform 5.2.0 · Storage Optimization / Index Lifecycle",
+      recovery:"Archive Policy 수동 실행 후 Archive Worker를 2개에서 4개로 확장하고 오래된 Search Index를 정리.",
+      verification:"Storage Usage, Archive Queue, Search Index Growth가 30분간 안정 범위인지 확인합니다."
+    },
+
+    "INC-20260729-012": {
+      severity:"Major", severityBadge:"amber", status:"Recovering",
+      solution:"Agent Platform", component:"Workflow Engine", version:"1.8.0",
+      platform:"OpenShift 4.18", assignee:"이OO", detection:"SK Monitoring",
+      summary:"Agent Workflow 평균 처리시간이 1.2초에서 8.7초까지 증가했습니다. 특정 외부 Tool Endpoint 응답 지연으로 Workflow Queue가 누적된 것이 주요 원인으로 분석됩니다.",
+      cause:"External Tool Latency / Workflow Queue Buildup", confidence:86,
+      metrics:[
+        {name:"Workflow P95",value:"8.7s",before:"1.2s",delta:"+625%",target:"< 2s",after:"1.6s"},
+        {name:"Queue Depth",value:"284",before:"21",delta:"+1,252%",target:"< 50",after:"32"},
+        {name:"Tool Latency",value:"6.1s",before:"620ms",delta:"+884%",target:"< 1s",after:"740ms"},
+        {name:"Error Rate",value:"2.2%",before:"0.3%",delta:"+1.9pp",target:"< 0.5%",after:"0.2%"}
+      ],
+      events:[
+        ["16:37:10","Metric","amber","External Tool P95 exceeded 3 seconds."],
+        ["16:39:44","Platform","amber","Workflow Queue depth exceeded 100."],
+        ["16:42:01","Incident","red","Workflow latency Incident created."],
+        ["16:45:22","AI","purple","External Tool latency correlated with queue growth."],
+        ["16:51:09","Recovery","blue","Secondary Tool endpoint routing activated."]
+      ],
+      logs:[
+        ["16:37:10","WARN","workflow-engine-1","tool_call latency_ms=3418 tool=customer-profile-api"],
+        ["16:39:44","WARN","workflow-engine-2","queue_depth=118 workers=16"],
+        ["16:41:57","ERROR","tool-manager","tool request timeout endpoint=customer-profile-api timeout_ms=5000"],
+        ["16:42:01","WARN","workflow-engine-1","workflow_elapsed_ms=8704 queue_depth=284"],
+        ["16:51:09","INFO","tool-manager","fallback endpoint activated endpoint=customer-profile-api-secondary"]
+      ],
+      evidence:[
+        "Workflow Queue 증가 시점과 external Tool latency 상승 시점이 일치합니다.",
+        "Agent Runtime CPU / Memory는 정상 범위였습니다.",
+        "Secondary Tool Endpoint는 동일 시점에 정상 응답했습니다.",
+        "Primary Tool timeout 이후 Workflow 처리시간이 급증했습니다."
+      ],
+      recommendations:[
+        ["Route to Secondary Tool Endpoint","Primary Tool 복구 전까지 Secondary Endpoint를 사용합니다."],
+        ["Drain Workflow Queue","Queue 우선순위를 적용해 지연 작업을 순차 처리합니다."],
+        ["Tune Tool Timeout / Circuit Breaker","외부 Tool 장애가 전체 Workflow로 전파되지 않도록 보호합니다."]
+      ],
+      similar:[
+        ["INC-20260604-018","88%","Tool endpoint latency","Fallback routing enabled"],
+        ["INC-20260410-009","72%","Workflow queue saturation","Worker scale-out"]
+      ],
+      lifecycle:"Agent Platform 1.9.0 · Tool Manager / Workflow stability improvement",
+      recovery:"Primary Tool을 Secondary Endpoint로 우회하고 Workflow Queue 우선순위를 적용해 대기 작업을 Drain 중.",
+      verification:"Workflow P95, Queue Depth, Tool Latency를 15분간 확인하고 Primary Endpoint 재전환 여부를 판단합니다."
+    },
+
+    "INC-20260809-014": {
+      severity:"Critical", severityBadge:"red", status:"Resolved",
+      solution:"Agent Platform", component:"Agent Runtime", version:"1.8.0",
+      platform:"OpenShift 4.18", assignee:"정OO", detection:"SK Monitoring",
+      summary:"Agent Runtime 프로세스가 Memory Limit에 도달해 OOMKilled 되었습니다. 특정 장기 실행 Agent Session에서 Context 메모리가 누적된 것이 원인으로 확인되었습니다.",
+      cause:"Runtime Memory Exhaustion / OOMKilled", confidence:97,
+      metrics:[
+        {name:"Memory Usage",value:"99%",before:"61%",delta:"+38pp",target:"< 75%",after:"63%"},
+        {name:"RSS Memory",value:"7.8GB",before:"4.1GB",delta:"+90%",target:"< 6GB",after:"4.4GB"},
+        {name:"Restart Count",value:"3",before:"0",delta:"+3",target:"0",after:"0"},
+        {name:"Active Sessions",value:"142",before:"96",delta:"+48%",target:"< 120",after:"108"}
+      ],
+      events:[
+        ["11:08:17","Metric","amber","Agent Runtime memory exceeded 85%."],
+        ["11:12:02","Metric","red","Memory exceeded 95% critical threshold."],
+        ["11:14:11","Platform","red","Pod OOMKilled · restart count 1."],
+        ["11:14:18","Incident","red","Critical runtime Incident created."],
+        ["11:22:43","Recovery","blue","Memory limit adjusted and runtime restarted."],
+        ["11:38:10","Verification","green","Memory stable · Incident resolved."]
+      ],
+      logs:[
+        ["11:12:02","WARN","agent-runtime-3","heap_used_mb=7421 memory_limit_mb=8192 active_sessions=139"],
+        ["11:14:10","ERROR","agent-runtime-3","memory allocation failed requested_mb=312"],
+        ["11:14:11","ERROR","kubelet","container agent-runtime terminated reason=OOMKilled"],
+        ["11:22:43","INFO","operator","memory_limit_mb changed 8192 -> 10240"],
+        ["11:38:10","INFO","health-checker","runtime stable memory_usage=63% restart_count=0"]
+      ],
+      evidence:[
+        "Pod OOMKilled 이벤트와 Memory 99% 도달 시점이 일치합니다.",
+        "특정 장기 Session에서 Context 메모리 해제가 지연되었습니다.",
+        "CPU 및 외부 Tool latency는 정상 범위였습니다.",
+        "Memory Limit 조정 이후 동일 현상이 재발하지 않았습니다."
+      ],
+      recommendations:[
+        ["Increase Runtime Memory Limit","8GB → 10GB로 상향합니다."],
+        ["Session Context Cleanup","장기 Session Context 정리 정책을 강화합니다."],
+        ["Apply Agent Platform 1.9.0","Runtime Memory 최적화 개선을 적용합니다."]
+      ],
+      similar:[
+        ["INC-20260512-004","94%","Agent Runtime OOM","Memory limit + session cleanup"],
+        ["INC-20260301-017","69%","Long session memory growth","Session TTL reduced"]
+      ],
+      lifecycle:"Agent Platform 1.9.0 · Runtime Memory Optimization",
+      recovery:"Memory Limit을 8GB에서 10GB로 조정하고 Runtime 재기동 후 Long Session Context Cleanup 정책을 적용.",
+      verification:"24시간 동안 Memory Usage 및 Restart Count를 관찰했고 동일 OOM 현상이 재발하지 않았습니다."
+    },
+
+    "INC-20260808-008": {
+      severity:"Major", severityBadge:"amber", status:"Resolved",
+      solution:"AI Guardrail", component:"PII Detection", version:"1.1.0",
+      platform:"OpenShift 4.18", assignee:"최OO", detection:"SK Monitoring",
+      summary:"PII Detection Engine과 Policy Engine 사이 요청에서 Timeout이 발생해 일부 요청의 Guardrail 처리시간이 증가했습니다. PII Detection 처리량 증가 대비 Timeout 설정이 낮았던 것이 원인입니다.",
+      cause:"PII Detection Processing Timeout", confidence:91,
+      metrics:[
+        {name:"Detection P95",value:"4.6s",before:"1.1s",delta:"+318%",target:"< 2s",after:"1.4s"},
+        {name:"Timeout Rate",value:"3.8%",before:"0.1%",delta:"+3.7pp",target:"< 0.5%",after:"0.1%"},
+        {name:"Queue Depth",value:"97",before:"14",delta:"+593%",target:"< 30",after:"18"},
+        {name:"Throughput",value:"148 rps",before:"92 rps",delta:"+61%",target:"Stable",after:"132 rps"}
+      ],
+      events:[
+        ["16:07:40","Metric","amber","PII Detection P95 exceeded 3 seconds."],
+        ["16:10:02","Threshold","amber","Detection Queue exceeded 80."],
+        ["16:12:18","Error","red","Policy Engine request timeout detected."],
+        ["16:12:21","Incident","red","PII Detection Incident created."],
+        ["16:38:30","Recovery","blue","Timeout changed 3s → 5s."],
+        ["17:03:11","Verification","green","32 test scenarios passed."]
+      ],
+      logs:[
+        ["16:10:02","WARN","pii-detector-1","queue_depth=84 throughput_rps=143"],
+        ["16:12:18","ERROR","policy-engine","pii detection timeout timeout_ms=3000 request_id=51a***"],
+        ["16:14:09","WARN","pii-detector-2","processing_latency_ms=4218"],
+        ["16:38:30","INFO","operator","pii_timeout_ms changed 3000 -> 5000"],
+        ["17:03:11","INFO","verification","pii_test_scenarios passed=32 failed=0"]
+      ],
+      evidence:[
+        "PII Detection Queue 증가와 Timeout 발생 시점이 일치합니다.",
+        "Policy Engine 자체 CPU / Memory에는 이상이 없었습니다.",
+        "Timeout 5초 변경 후 오류율이 즉시 정상화되었습니다.",
+        "32개 PII Test Scenario가 모두 정상 처리되었습니다."
+      ],
+      recommendations:[
+        ["Increase PII Timeout","3초 → 5초로 조정합니다."],
+        ["Scale Detection Workers","Peak 시간대 Worker 수를 4 → 6으로 확장합니다."],
+        ["Monitor Detection Queue","Queue 60 이상 시 선제 Warning을 생성합니다."]
+      ],
+      similar:[
+        ["INC-20260530-015","85%","PII worker saturation","Worker scale-out"],
+        ["INC-20260402-010","77%","Guardrail timeout","Timeout tuning"]
+      ],
+      lifecycle:"AI Guardrail 1.2.0 candidate · Detection throughput optimization",
+      recovery:"PII Detection Timeout을 3초에서 5초로 변경하고 Peak 시간대 Worker를 4개에서 6개로 확장.",
+      verification:"PII 시나리오 32건 재실행과 30분간 Timeout Rate 검증을 완료했습니다."
+    },
+
+    "INC-20260807-021": {
+      severity:"Critical", severityBadge:"red", status:"Resolved",
+      solution:"AI Platform", component:"Model Serving", version:"2.4.1",
+      platform:"OpenShift 4.18", assignee:"강OO", detection:"SK Monitoring",
+      summary:"Model Serving Worker 1개가 비정상 상태가 되면서 일부 LLM 요청에서 HTTP 503이 발생했습니다. GPU Worker health check 실패 후 Traffic이 정상 Worker로 완전히 전환되지 않은 것이 원인입니다.",
+      cause:"GPU Worker Health Failure / Incomplete Traffic Drain", confidence:95,
+      metrics:[
+        {name:"HTTP 503",value:"12.4%",before:"0.1%",delta:"+12.3pp",target:"< 0.5%",after:"0.1%"},
+        {name:"Healthy Workers",value:"3 / 4",before:"4 / 4",delta:"-1",target:"4 / 4",after:"4 / 4"},
+        {name:"GPU Util",value:"0%",before:"73%",delta:"Worker-3",target:"> 20%",after:"68%"},
+        {name:"Queue Depth",value:"118",before:"22",delta:"+436%",target:"< 40",after:"19"}
+      ],
+      events:[
+        ["09:37:10","Platform","amber","GPU Worker-3 health check degraded."],
+        ["09:40:55","Platform","red","GPU Worker-3 marked unhealthy."],
+        ["09:42:01","Error","red","HTTP 503 rate exceeded 10%."],
+        ["09:42:04","Incident","red","Critical Model Serving Incident created."],
+        ["09:55:26","Recovery","blue","Worker-3 restarted and traffic drained."],
+        ["10:18:02","Verification","green","All workers healthy · Error Rate 0.1%."]
+      ],
+      logs:[
+        ["09:40:55","ERROR","worker-3","health check failed gpu_context_unavailable=true"],
+        ["09:41:12","WARN","model-router","worker-3 unhealthy but active_connections=31"],
+        ["09:42:01","ERROR","serving-api","upstream unavailable status=503 worker=3"],
+        ["09:55:26","INFO","operator","worker-3 restart initiated drain_connections=true"],
+        ["10:18:02","INFO","health-checker","workers_healthy=4 error_rate=0.1%"]
+      ],
+      evidence:[
+        "GPU Worker-3 health failure 직후 HTTP 503이 급증했습니다.",
+        "Unhealthy Worker에 31개 Active Connection이 남아 있었습니다.",
+        "다른 GPU Worker의 GPU / Memory 상태는 정상 범위였습니다.",
+        "Worker Restart 및 Traffic Drain 후 오류가 즉시 정상화되었습니다."
+      ],
+      recommendations:[
+        ["Drain Traffic Before Restart","Unhealthy Worker의 Active Connection을 먼저 제거합니다."],
+        ["Restart GPU Worker","Worker-3를 안전하게 재기동합니다."],
+        ["Improve Health-based Routing","Unhealthy Worker를 Routing 대상에서 즉시 제외합니다."]
+      ],
+      similar:[
+        ["INC-20260509-002","93%","GPU worker health failure","Drain + restart"],
+        ["INC-20260328-019","76%","Serving worker unavailable","Health routing fix"]
+      ],
+      lifecycle:"AI Platform 2.5.0 · Model Serving health-based traffic control",
+      recovery:"GPU Worker-3 Traffic Drain 후 Worker 재기동, Model Router에서 Unhealthy Worker 즉시 제외 정책 적용.",
+      verification:"4개 Worker Health, HTTP 503, Queue Depth를 30분 검증 후 정상 상태를 확인했습니다."
+    },
+
+    "INC-20260805-011": {
+      severity:"Minor", severityBadge:"blue", status:"Resolved",
+      solution:"SK Logging", component:"Log Collector", version:"3.2.4",
+      platform:"OpenShift 4.18", assignee:"윤OO", detection:"SK Monitoring",
+      summary:"Application Log 수집 지연이 5분을 초과했습니다. 특정 Collector Instance의 Queue가 증가하고 Storage 전송 Batch가 지연된 것이 원인입니다.",
+      cause:"Collector Queue Backlog", confidence:88,
+      metrics:[
+        {name:"Ingestion Delay",value:"5m 42s",before:"18s",delta:"+1,800%",target:"< 30s",after:"12s"},
+        {name:"Queue Depth",value:"18,420",before:"1,120",delta:"+1,545%",target:"< 3,000",after:"820"},
+        {name:"Collector CPU",value:"91%",before:"46%",delta:"+45pp",target:"< 70%",after:"48%"},
+        {name:"Batch Retry",value:"84",before:"2",delta:"+82",target:"< 5",after:"0"}
+      ],
+      events:[
+        ["19:16:18","Metric","amber","Log ingestion delay exceeded 60 seconds."],
+        ["19:18:44","Metric","amber","Collector Queue exceeded 10,000."],
+        ["19:21:03","Incident","red","Logging delay Incident created."],
+        ["19:24:19","AI","purple","Collector Queue / Batch Retry correlation identified."],
+        ["19:31:55","Recovery","blue","Collector instance scale-out started."],
+        ["20:04:02","Verification","green","Ingestion delay normalized to 12 seconds."]
+      ],
+      logs:[
+        ["19:18:44","WARN","log-collector-2","queue_depth=12442 cpu=87%"],
+        ["19:19:12","WARN","log-collector-2","storage batch retry count=51 backoff_ms=4000"],
+        ["19:21:03","ERROR","log-collector-2","ingestion_delay_sec=342 threshold_sec=300"],
+        ["19:31:55","INFO","operator","collector replicas changed 3 -> 5"],
+        ["20:04:02","INFO","health-checker","ingestion_delay_sec=12 queue_depth=820 retries=0"]
+      ],
+      evidence:[
+        "Collector Queue 증가와 Ingestion Delay 증가가 동일 시점에 발생했습니다.",
+        "Log Storage 자체 Latency는 정상 범위였습니다.",
+        "Collector-2 CPU가 91%까지 상승했습니다.",
+        "Collector Scale-out 이후 Queue와 Delay가 즉시 감소했습니다."
+      ],
+      recommendations:[
+        ["Scale-out Log Collector","Collector Replica를 3 → 5로 확장합니다."],
+        ["Reduce Batch Size","Peak 시간대 Batch Size를 동적으로 조정합니다."],
+        ["Plan SK Logging 4.0","Collector 처리량 개선 버전으로 전환합니다."]
+      ],
+      similar:[
+        ["INC-20260618-020","89%","Collector queue backlog","Collector scale-out"],
+        ["INC-20260422-013","73%","Storage batch retry","Batch tuning"]
+      ],
+      lifecycle:"SK Logging 4.0.0 · Collector throughput improvement / 3.x EOS",
+      recovery:"Collector Replica를 3개에서 5개로 확장하고 Batch Size를 20% 축소해 Queue를 해소.",
+      verification:"Ingestion Delay 12초, Queue 820, Batch Retry 0 상태를 20분간 확인했습니다."
+    },
+
+    "INC-20260804-005": {
+      severity:"Major", severityBadge:"amber", status:"Resolved",
+      solution:"SK Monitoring", component:"Metric Collector", version:"2.6.4",
+      platform:"OpenShift 4.18", assignee:"오OO", detection:"Manual",
+      summary:"AI Platform Dashboard에서 일부 GPU Usage Metric이 표시되지 않는 현상이 수동으로 신고되었습니다. GPU Exporter Target이 Metric Collector 설정에 누락된 것이 원인입니다.",
+      cause:"Metric Collector Target Misconfiguration", confidence:99,
+      metrics:[
+        {name:"GPU Targets",value:"7 / 8",before:"8 / 8",delta:"-1 target",target:"8 / 8",after:"8 / 8"},
+        {name:"Missing Series",value:"24",before:"0",delta:"+24",target:"0",after:"0"},
+        {name:"Scrape Success",value:"87.5%",before:"100%",delta:"-12.5pp",target:"100%",after:"100%"},
+        {name:"Dashboard Gap",value:"1 node",before:"0",delta:"+1",target:"0",after:"0"}
+      ],
+      events:[
+        ["13:22:00","Manual","blue","Operator reported missing GPU metric on dashboard."],
+        ["13:26:14","Discovery","amber","GPU Node-08 exporter exists but is not in scrape targets."],
+        ["13:31:08","AI","purple","Target configuration difference identified."],
+        ["13:44:20","Recovery","blue","GPU Node-08 target added to Metric Collector."],
+        ["14:02:11","Verification","green","All GPU metric series restored."]
+      ],
+      logs:[
+        ["13:24:18","INFO","metric-collector","active_targets=7 expected_targets=8"],
+        ["13:26:14","WARN","discovery-adapter","exporter found but target missing node=gpu-08"],
+        ["13:31:08","INFO","config-analyzer","target diff detected missing=gpu-08:9400"],
+        ["13:44:20","INFO","operator","target added endpoint=gpu-08:9400"],
+        ["14:02:11","INFO","verification","gpu_targets=8 scrape_success=100% missing_series=0"]
+      ],
+      evidence:[
+        "GPU Node-08 Exporter는 실행 중이지만 Collector Target에 없었습니다.",
+        "네트워크 Connectivity와 Exporter Health에는 이상이 없었습니다.",
+        "Target 추가 직후 Missing Series가 0으로 회복되었습니다.",
+        "다른 7개 GPU Node Metric은 지속적으로 정상 수집되었습니다."
+      ],
+      recommendations:[
+        ["Add Missing GPU Target","gpu-08:9400을 Metric Collector Target에 등록합니다."],
+        ["Enable Target Drift Detection","Discovery 결과와 Monitoring Target을 자동 비교합니다."],
+        ["Validate after Node Scale-out","GPU Node 증설 시 Target 자동검증 단계를 추가합니다."]
+      ],
+      similar:[
+        ["INC-20260503-007","96%","Monitoring target missing","Target added"],
+        ["INC-20260221-014","81%","Exporter discovered but unregistered","Auto target sync"]
+      ],
+      lifecycle:"SK Monitoring 2.6.5 · Target discovery validation improvement",
+      recovery:"GPU Node-08 Exporter Target을 Collector 설정에 추가하고 Target Drift 자동검증 정책을 활성화.",
+      verification:"8개 GPU Node 전체 Scrape Success 100%, Missing Series 0을 확인했습니다."
+    }
+  };
+
+  let activeWorkspaceIncidentId = "INC-20260810-001";
+
+  function levelClass(level){
+    return level==="ERROR" ? "logerr" : level==="WARN" ? "logwarn" : "loginfo";
+  }
+
+  function metricCards(d){
+    return d.metrics.map(m=>`
+      <div class="metric-mini">
+        <small>${m.name}</small>
+        <b>${m.value}</b>
+        <span>${m.delta}</span>
+      </div>`).join("");
+  }
+
+  function chartForMetric(m, idx){
+    const colors=["#5066ee","#ff651d","#ce4d52","#218a68"];
+    const pts=[
+      "0,118 60,116 120,113 180,107 240,94 300,70 360,39 420,22 480,29 540,44 600,57",
+      "0,95 60,92 120,87 180,76 240,61 300,42 360,20 420,16 480,19 540,27 600,36",
+      "0,120 60,120 120,119 180,117 240,111 300,90 360,61 420,35 480,27 540,33 600,47",
+      "0,82 60,79 120,75 180,71 240,62 300,51 360,33 420,27 480,31 540,37 600,42"
+    ];
+    return `
+      <div class="chart-box">
+        <div class="chart-title"><b>${m.name}</b><span>${m.value}</span></div>
+        <div class="chart">
+          <svg viewBox="0 0 600 145" preserveAspectRatio="none">
+            <line x1="0" y1="115" x2="600" y2="115" stroke="#e6e9ef"/>
+            <line x1="0" y1="70" x2="600" y2="70" stroke="#edf0f4"/>
+            <polyline fill="none" stroke="${colors[idx%4]}" stroke-width="3" points="${pts[idx%4]}"/>
+            <line x1="360" y1="0" x2="360" y2="145" stroke="#ff651d" stroke-dasharray="4 4"/>
+          </svg>
+        </div>
+        <div class="axis"><span>Before</span><span>Incident</span><span>After</span></div>
+      </div>`;
+  }
+
+  function renderWorkspace(id){
+    const d=incidentDetailMap[id];
+    if(!d) return;
+    activeWorkspaceIncidentId=id;
+
+    const row = incidents.find(x=>x[2]===id);
+    const title = row ? row[3] : id;
+
+    const eye=document.getElementById("workspaceIncidentEyebrow");
+    const ttl=document.getElementById("workspaceIncidentTitle");
+    if(eye) eye.textContent=id+" · Incident Workspace";
+    if(ttl) ttl.textContent=title;
+
+    const sev=document.getElementById("workspaceSeverityBadge");
+    if(sev){ sev.textContent=d.severity; sev.className="badge "+d.severityBadge; }
+    const st=document.getElementById("workspaceStatusBadge");
+    if(st){
+      st.textContent=d.status;
+      st.className="badge "+(d.status==="Resolved"?"green":d.status==="Recovering"?"purple":d.status==="Investigating"?"blue":"amber");
+    }
+    const sol=document.getElementById("workspaceSolutionBadge");
+    const comp=document.getElementById("workspaceComponentBadge");
+    if(sol) sol.textContent=d.solution;
+    if(comp) comp.textContent=d.component;
+
+    document.getElementById("ws-overview").innerHTML=`
+      <div class="workspace-grid">
+        <div>
+          <div class="card">
+            <div class="card-head"><div><h3>AI Summary</h3><span>Local Analysis + Hub Knowledge</span></div><span class="badge purple">AI Generated</span></div>
+            <div class="card-body"><p style="font-size:9px;line-height:1.7;color:#535b68;margin:0">${d.summary}</p></div>
+          </div>
+          <div class="card" style="margin-top:15px">
+            <div class="card-head"><div><h3>Key Signals</h3><span>Incident Context</span></div></div>
+            <div class="card-body"><div class="metric-mini-grid">${metricCards(d)}</div></div>
+          </div>
+          <div class="card" style="margin-top:15px">
+            <div class="card-head"><div><h3>Incident Timeline</h3><span>${d.events.length} correlated events</span></div></div>
+            <div class="card-body">
+              <div class="timeline">${d.events.slice(0,5).map(e=>`<div class="tl"><b>${e[0]} · ${e[1]}</b><p>${e[3]}</p></div>`).join("")}</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-head"><div><h3>Incident Context</h3><span>Environment facts</span></div></div>
+            <div class="card-body">
+              <div class="kv"><span>Solution</span><b>${d.solution}</b></div>
+              <div class="kv"><span>Component</span><b>${d.component}</b></div>
+              <div class="kv"><span>Version</span><b>${d.version}</b></div>
+              <div class="kv"><span>Platform</span><b>${d.platform}</b></div>
+              <div class="kv"><span>Detection</span><b>${d.detection}</b></div>
+              <div class="kv"><span>Assignee</span><b>${d.assignee}</b></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:15px">
+            <div class="card-head"><div><h3>Knowledge Links</h3><span>Hub-enriched</span></div></div>
+            <div class="card-body">
+              <div class="attention-list">
+                <div class="attention"><div class="attention-icon">${d.similar.length}</div><div><b>Similar Incidents</b><p>Best match ${d.similar[0][1]}</p></div><span class="badge purple">Knowledge</span></div>
+                <div class="attention" data-jump="lifecycle"><div class="attention-icon">↑</div><div><b>Lifecycle Recommendation</b><p>${d.lifecycle}</p></div><span class="badge blue">Lifecycle</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("ws-monitoring").innerHTML=`
+      <div class="card">
+        <div class="card-head"><div><h3>Monitoring Evidence</h3><span>Incident-specific metrics</span></div><span class="badge blue">Context Window</span></div>
+        <div class="card-body">
+          <div class="metric-mini-grid">${metricCards(d)}</div>
+          <div class="chart-grid" style="margin-top:10px">${d.metrics.map((m,i)=>chartForMetric(m,i)).join("")}</div>
+        </div>
+      </div>`;
+
+    document.getElementById("ws-logs").innerHTML=`
+      <div class="card">
+        <div class="card-head"><div><h3>Application / Platform Logs</h3><span>${d.logs.length} relevant sample lines · Secret masked</span></div><span class="badge dark">${d.solution} / ${d.component}</span></div>
+        <div class="card-body">
+          <div class="log-toolbar">
+            <input id="dynamicLogSearch" value="${d.cause.split(" ").slice(0,3).join(" ")}"/>
+            <button class="btn btn-soft" id="dynamicLogFilterBtn">Filter</button>
+            <button class="btn btn-outline" id="dynamicLogExportBtn">Export</button>
+          </div>
+          <div class="logbox" id="dynamicLogBox">
+            ${d.logs.map(l=>`<div class="logline"><span class="logtime">${l[0]}</span><span class="${levelClass(l[1])}">${l[1]}</span><span>${l[2]}</span><span>${l[3]}</span></div>`).join("")}
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("ws-events").innerHTML=`
+      <div class="card">
+        <div class="card-head"><div><h3>Correlated Events</h3><span>${d.events.length} events in incident context</span></div></div>
+        <div class="card-body">
+          ${d.events.map(e=>`<div class="eventline"><b>${e[0]}</b><span class="badge ${e[2]}">${e[1]}</span><span>${e[3]}</span></div>`).join("")}
+        </div>
+      </div>`;
+
+    document.getElementById("ws-ai").innerHTML=`
+      <div class="workspace-grid">
+        <div>
+          <div class="ai-card">
+            <div class="eyebrow">Probable Cause</div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+              <h3>${d.cause}</h3><span class="badge red">${d.confidence}% Confidence</span>
+            </div>
+            <div class="confidence"><span style="width:${d.confidence}%"></span></div>
+            <div class="meta">Local Analysis + Hub Knowledge</div>
+            <div class="evidence-list">${d.evidence.map(x=>`<div>${x}</div>`).join("")}</div>
+          </div>
+          <div class="card" style="margin-top:15px">
+            <div class="card-head"><div><h3>Recommended Actions</h3><span>Knowledge-guided</span></div></div>
+            <div class="card-body">${d.recommendations.map((r,i)=>`<div class="reco ${i<2?'ai':''}"><b>${i+1}. ${r[0]}</b><p>${r[1]}</p></div>`).join("")}</div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-head"><div><h3>Similar Knowledge</h3><span>Hub Knowledge</span></div></div>
+            <div class="card-body">
+              <div class="attention-list">
+                ${d.similar.map(s=>`<div class="attention"><div class="attention-icon">${s[1].replace("%","")}</div><div><b>${s[0]}</b><p>${s[2]} · ${s[3]}</p></div><span class="badge purple">${s[1]}</span></div>`).join("")}
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:15px">
+            <div class="card-head"><div><h3>Lifecycle Link</h3><span>Related release / capability</span></div></div>
+            <div class="card-body"><div class="attention" data-jump="lifecycle"><div class="attention-icon">↑</div><div><b>${d.solution}</b><p>${d.lifecycle}</p></div><span class="badge blue">Lifecycle</span></div></div>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("ws-recovery").innerHTML=`
+      <div class="workspace-grid">
+        <div class="card">
+          <div class="card-head"><div><h3>Recovery Plan</h3><span>Guidance first</span></div><span class="badge purple">AI Recommendation</span></div>
+          <div class="card-body">
+            <div class="reco ai"><b>Recommended Recovery</b><p>${d.recovery}</p></div>
+            <div class="section-label" style="margin-top:14px">Actual Action</div>
+            <textarea id="dynamicRecoveryText" style="width:100%;min-height:90px;border:1px solid var(--line);border-radius:9px;padding:10px;font-size:9px">${d.recovery}</textarea>
+            <button class="btn btn-brand" id="dynamicRequestApprovalBtn" style="margin-top:10px">${d.status==="Resolved"?"Recovery Completed":"Request Approval"}</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h3>Change Readiness</h3><span>Customer controlled</span></div></div>
+          <div class="card-body">
+            <div class="kv"><span>Config Backup</span><b>Ready</b></div>
+            <div class="kv"><span>Rollback Point</span><b>Ready</b></div>
+            <div class="kv"><span>Health Check</span><b>Ready</b></div>
+            <div class="kv"><span>Customer Approval</span><b id="dynamicApprovalStatus" style="color:${d.status==="Resolved"?"var(--green)":"var(--amber)"}">${d.status==="Resolved"?"Approved / Completed":"Pending"}</b></div>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("ws-verification").innerHTML=`
+      <div class="card">
+        <div class="card-head">
+          <div><h3>Post-Recovery Verification</h3><span>${d.verification}</span></div>
+          <div class="actions"><span class="badge ${d.status==="Resolved"?"green":"amber"}" id="dynamicVerificationBadge">${d.status==="Resolved"?"Passed":"Pending"}</span><button class="btn btn-outline" id="dynamicRunVerificationBtn">${d.status==="Resolved"?"Re-run Verification":"Run Verification"}</button></div>
+        </div>
+        <div class="card-body">
+          <div class="verify-grid">${d.metrics.slice(0,3).map(m=>`<div class="verify"><small>${m.name} · Before ${m.value}</small><b>${d.status==="Resolved"?m.after:"Pending"}</b><small>Target ${m.target}</small></div>`).join("")}</div>
+          <div class="reco" style="margin-top:10px"><b>Verification Logic</b><p>${d.verification}</p></div>
+        </div>
+      </div>`;
+
+    bindDynamicWorkspaceActions(d, id);
+  }
+
+  function bindDynamicWorkspaceActions(d,id){
+    const filterBtn=document.getElementById("dynamicLogFilterBtn");
+    const exportBtn=document.getElementById("dynamicLogExportBtn");
+    const search=document.getElementById("dynamicLogSearch");
+    if(filterBtn) filterBtn.onclick=()=>{
+      const q=(search.value||"").toLowerCase().trim();
+      let visible=0;
+      document.querySelectorAll("#dynamicLogBox .logline").forEach(line=>{
+        const ok=!q || line.textContent.toLowerCase().includes(q);
+        line.style.display=ok?"grid":"none";
+        if(ok) visible++;
+      });
+      if(typeof toast==="function") toast("Log filter applied",visible+"개 로그가 표시됩니다.");
+    };
+    if(exportBtn) exportBtn.onclick=()=>{
+      const lines=[...document.querySelectorAll("#dynamicLogBox .logline")].filter(x=>x.style.display!=="none").map(x=>x.textContent.replace(/\s+/g," ").trim()).join("\n");
+      if(typeof download==="function") download(id+"_logs.txt",lines);
+    };
+
+    const approval=document.getElementById("dynamicRequestApprovalBtn");
+    if(approval && d.status!=="Resolved"){
+      approval.onclick=()=>{
+        const status=document.getElementById("dynamicApprovalStatus");
+        if(status){status.textContent="Approved";status.style.color="var(--green)";}
+        approval.textContent="Approved";
+        approval.disabled=true;
+        const row=incidents.find(x=>x[2]===id);
+        if(row) row[7]="Recovering";
+        d.status="Recovering";
+        if(typeof renderIncidentRowsEnhanced==="function") renderIncidentRowsEnhanced();
+        const badge=document.getElementById("workspaceStatusBadge");
+        if(badge){badge.textContent="Recovering";badge.className="badge purple";}
+        if(typeof toast==="function") toast("Recovery approved",id+" 상태가 Recovering으로 변경되었습니다.");
+      };
+    }
+
+    const verify=document.getElementById("dynamicRunVerificationBtn");
+    if(verify){
+      verify.onclick=async()=>{
+        verify.disabled=true;verify.textContent="Verifying...";
+        await new Promise(r=>setTimeout(r,700));
+        d.status="Resolved";
+        const row=incidents.find(x=>x[2]===id);
+        if(row) row[7]="Resolved";
+        if(typeof renderIncidentRowsEnhanced==="function") renderIncidentRowsEnhanced();
+        renderWorkspace(id);
+        if(typeof toast==="function") toast("Verification passed",id+"가 Resolved 상태로 변경되었습니다.");
+      };
+    }
+  }
+
+  // Override the prior quick-view function: every incident gets a workspace button.
+  window.incidentQuick = function(i){
+    const id=i[2];
+    const d=incidentDetailMap[id];
+    if(!d) return;
+    document.getElementById("incidentTitle").textContent=i[3];
+    document.getElementById("incidentMeta").textContent=i[4]+" · "+i[5]+" · "+i[0];
+    const b=document.getElementById("incidentBadge");
+    b.textContent=i[7];
+    b.className="badge "+(i[7]==="Resolved"?"green":i[7]==="Investigating"?"red":i[7]==="Recovering"?"purple":"amber");
+
+    document.getElementById("incidentQuickBody").innerHTML=`
+      <div class="section-label">AI Summary</div>
+      <p style="font-size:9px;line-height:1.65;color:#535b68;margin-top:0">${d.summary}</p>
+
+      <div class="section-label" style="margin-top:14px">Likely Cause</div>
+      <div class="attention">
+        <div class="attention-icon">${d.confidence}</div>
+        <div><b>${d.cause}</b><p>Confidence ${d.confidence}% · ${d.evidence.length} supporting signals</p></div>
+        <span class="badge ${d.confidence>=90?"red":"amber"}">Likely</span>
+      </div>
+
+      <div class="section-label" style="margin-top:14px">Key Signals</div>
+      <div class="metric-mini-grid" style="grid-template-columns:repeat(2,1fr)">
+        ${d.metrics.slice(0,4).map(m=>`<div class="metric-mini"><small>${m.name}</small><b>${m.value}</b><span>${m.delta}</span></div>`).join("")}
+      </div>
+
+      <div class="section-label" style="margin-top:14px">Timeline</div>
+      <div class="timeline">${d.events.slice(0,4).map(e=>`<div class="tl"><b>${e[0]} · ${e[1]}</b><p>${e[3]}</p></div>`).join("")}</div>
+
+      <button class="btn btn-brand open-any-workspace" data-incident-id="${id}" style="width:100%;margin-top:8px">Open Incident Workspace</button>
+    `;
+  };
+
+  // Event delegation for all workspace buttons.
+  document.addEventListener("click",e=>{
+    const btn=e.target.closest(".open-any-workspace");
+    if(!btn) return;
+    renderWorkspace(btn.dataset.incidentId);
+    if(typeof showPage==="function") showPage("incident-workspace");
+  });
+
+  // Workspace header report/status should use currently active incident.
+  // Clone buttons first to remove the earlier AI-Gateway-only demo listeners.
+  let reportBtn=document.getElementById("generateWorkspaceReportBtn");
+  if(reportBtn){
+    const clean=reportBtn.cloneNode(true); reportBtn.replaceWith(clean); reportBtn=clean;
+  }
+  if(reportBtn){
+    reportBtn.onclick=()=>{
+      const row=incidents.find(x=>x[2]===activeWorkspaceIncidentId);
+      const d=incidentDetailMap[activeWorkspaceIncidentId];
+      if(!row||!d) return;
+      const report=[
+        "# Continuum Incident Report","",
+        "- Incident ID: "+activeWorkspaceIncidentId,
+        "- Title: "+row[3],
+        "- Severity: "+d.severity,
+        "- Status: "+d.status,
+        "- Solution: "+d.solution,
+        "- Component: "+d.component,
+        "",
+        "## Executive Summary",d.summary,"",
+        "## Probable Cause",d.cause+" ("+d.confidence+"%)","",
+        "## Evidence",...d.evidence.map(x=>"- "+x),"",
+        "## Recommended Actions",...d.recommendations.map((r,i)=>(i+1)+". "+r[0]+" — "+r[1]),"",
+        "## Recovery",d.recovery,"",
+        "## Verification",d.verification
+      ].join("\n");
+      if(typeof download==="function") download(activeWorkspaceIncidentId+"_workspace_report.md",report,"text/markdown;charset=utf-8");
+    };
+  }
+
+  let statusBtn=document.getElementById("updateIncidentStatusBtn");
+  if(statusBtn){
+    const clean=statusBtn.cloneNode(true); statusBtn.replaceWith(clean); statusBtn=clean;
+  }
+  if(statusBtn){
+    statusBtn.onclick=()=>{
+      const d=incidentDetailMap[activeWorkspaceIncidentId];
+      const row=incidents.find(x=>x[2]===activeWorkspaceIncidentId);
+      if(!d||!row) return;
+      const next=d.status==="Detected"?"Investigating":d.status==="Investigating"?"Recovering":d.status==="Recovering"?"Resolved":"Resolved";
+      d.status=next;row[7]=next;
+      if(typeof renderIncidentRowsEnhanced==="function") renderIncidentRowsEnhanced();
+      renderWorkspace(activeWorkspaceIncidentId);
+      if(typeof toast==="function") toast("Incident status updated",activeWorkspaceIncidentId+" · "+next);
+    };
+  }
+
+  // Re-select first incident using enhanced quick view after all scripts load.
+  setTimeout(()=>{
+    const first=incidents[0];
+    if(first) window.incidentQuick(first);
+    renderWorkspace("INC-20260810-001");
+  },0);
+
+  window.renderWorkspace = renderWorkspace;
+})();
+</script>
+
 </body>
 </html>
