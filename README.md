@@ -2,8 +2,6 @@
   <img src="docs/images/continuum-ci.png" width="180" alt="Continuum 로고">
 </p>
 
-<h1 align="center">Continuum</h1>
-
 <p align="center">
   <strong>Operations, Connected. Knowledge, Continued.</strong><br>
   폐쇄·이질적인 Enterprise IT 환경을 이해하고,<br>
