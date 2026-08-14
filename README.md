@@ -17,6 +17,22 @@
 > **Understand Local. Learn Globally.**  
 > Client는 현장을 이해하고, Hub는 여러 현장의 지식과 전문성을 연결합니다.
 
+## Live Pilot
+
+설명보다 먼저 Continuum의 실제 사용자 흐름을 경험해 보세요. 별도의 설치나 로그인 없이 GitHub Pages에서 바로 실행할 수 있습니다.
+
+<p align="center">
+  <a href="https://buildupcommon.github.io/continuum/"><strong>Continuum Pilot 시작하기 →</strong></a>
+</p>
+
+|  | **Continuum Client** | **Continuum Hub** |
+| --- | --- | --- |
+| **사용자** | 고객 현장 운영 담당자 | 본사·솔루션 운영 담당자 |
+| **경험** | 환경과 솔루션을 파악하고 Incident부터 Lifecycle까지 관리 | 여러 고객·환경·솔루션과 Operational Knowledge를 통합 탐색 |
+| **Live Demo** | [Client Pilot 바로 열기 →](https://buildupcommon.github.io/continuum/prototypes/client/) | [Hub Pilot 바로 열기 →](https://buildupcommon.github.io/continuum/prototypes/hub/) |
+
+> **Sample Data · Demo Only** — Pilot의 고객명과 운영 데이터는 제품 경험을 설명하기 위한 샘플입니다.
+
 ## Why Continuum
 
 고객과 사업은 빠르게 확장되지만, 사람과 전문가 경험에 의존하는 운영 역량은 같은 속도로 확장되지 않습니다.
@@ -166,17 +182,6 @@ Continuum AI는 연결된 맥락을 기반으로 다음 역할을 수행합니�
 - 개인에게 머물던 운영 경험의 조직 자산화
 - 솔루션 재사용성과 Lifecycle 관리 효율 향상
 - 장애 대응을 넘어 개선과 후속 사업 기회 발견
-
-## Pilot UI
-
-Continuum의 주요 사용자 흐름과 정보 구조를 검증하기 위한 정적 HTML 파일입니다. 각 Pilot은 샘플 데이터를 포함한 독립 실행형 화면이며 별도의 서버나 빌드 과정 없이 브라우저에서 열 수 있습니다.
-
-| Pilot | 대상 사용자 | 주요 화면 | 체험하기 |
-| --- | --- | --- | --- |
-| **Continuum Client** | 고객 현장 운영 담당자 | Environment, Solutions, Events, Incident Center, Lifecycle Center | [Client Pilot 열기](https://buildupcommon.github.io/continuum/prototypes/client/) |
-| **Continuum Hub** | 본사·솔루션 운영 담당자 | Customers, Environments, Solutions, Incidents, Lifecycle, Knowledge | [Hub Pilot 열기](https://buildupcommon.github.io/continuum/prototypes/hub/) |
-
-> Pilot은 [GitHub Pages](https://buildupcommon.github.io/continuum/)에서 바로 체험할 수 있습니다. 화면에 표시되는 고객명과 운영 데이터는 제품 설명을 위한 샘플 데이터입니다.
 
 ## Product Introduction Deck
 
