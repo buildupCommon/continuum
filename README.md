@@ -187,7 +187,7 @@ Continuum AI는 연결된 맥락을 기반으로 다음 역할을 수행합니�
 
 6페이지 제품소개서를 한 번에 확인하거나 내려받을 수 있습니다.
 
-[**Continuum 제품소개서 PDF 보기 →**](output/pdf/continuum-6-page-brochure.pdf)
+[**Continuum 제품소개서 PDF 보기 →**](docs/product-introduction/continuum-6-page-brochure.pdf)
 
 <details>
 <summary><strong>제품소개서 전체 보기</strong></summary>
